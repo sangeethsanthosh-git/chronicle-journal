@@ -130,7 +130,7 @@ app/
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/chronicle-journal.git
+git clone https://github.com/sangeethsanthosh-git/chronicle-journal.git
 cd chronicle-journal
 
 # Run all unit tests (41 tests covering use cases, repositories, viewmodels, security, backup)

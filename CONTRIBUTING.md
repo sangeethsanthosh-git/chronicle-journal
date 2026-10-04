@@ -11,7 +11,7 @@ Thank you for your interest in contributing to Chronicle! We welcome bug reports
 
 2. **Clone and Build**:
    ```bash
-   git clone https://github.com/your-username/chronicle-journal.git
+   git clone https://github.com/sangeethsanthosh-git/chronicle-journal.git
    cd chronicle-journal
    ./gradlew assembleDebug
    ```
