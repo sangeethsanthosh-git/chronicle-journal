@@ -24,7 +24,7 @@ class VintagePostcardWidget extends StatelessWidget {
     this.imagePath,
     required this.message,
     required this.date,
-    this.location = 'CHRONICLE POST',
+    this.location = 'MIORA POST',
     this.recipient = 'To: Dear Future Self',
     this.isEditable = false,
     this.onEdit,
@@ -359,7 +359,7 @@ class VintagePostcardWidget extends StatelessWidget {
                           fontFamily: 'serif',
                           fontSize: 8.5,
                           fontStyle: FontStyle.italic,
-                          color: const Color(0xFF9A8F83),
+                          color: const Color(0xFF5E544C),
                         ),
                       ),
 
@@ -367,7 +367,7 @@ class VintagePostcardWidget extends StatelessWidget {
 
                       // Ruled Address Lines (matching Image 1)
                       _buildAddressLine(recipient ?? 'To: Dear Future Self'),
-                      _buildAddressLine('Chronicle Archive, Vol. 1'),
+                      _buildAddressLine('Miora Archive, Vol. 1'),
                       _buildAddressLine(
                         '${location.isEmpty ? "Quiet Thoughts" : location}, Planet Earth',
                       ),

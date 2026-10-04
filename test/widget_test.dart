@@ -6,7 +6,7 @@ import 'package:chronicle/main.dart';
 import 'package:chronicle/presentation/providers/database_provider.dart';
 
 void main() {
-  testWidgets('ChronicleApp smoke test renders without error', (
+  testWidgets('MioraApp smoke test renders without error', (
     WidgetTester tester,
   ) async {
     final testDb = AppDatabase(NativeDatabase.memory());
@@ -14,15 +14,15 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [databaseProvider.overrideWithValue(testDb)],
-        child: const ChronicleApp(),
+        child: const MioraApp(),
       ),
     );
 
     // Initial pump
     await tester.pumpAndSettle();
 
-    // Verify title text exists somewhere in widget tree
-    expect(find.byType(ChronicleApp), findsOneWidget);
+    // Verify app widget exists in widget tree
+    expect(find.byType(MioraApp), findsOneWidget);
 
     await testDb.close();
   });

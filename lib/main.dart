@@ -9,11 +9,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService.initialize();
 
-  runApp(const ProviderScope(child: ChronicleApp()));
+  runApp(const ProviderScope(child: MioraApp()));
 }
 
-class ChronicleApp extends ConsumerWidget {
-  const ChronicleApp({super.key});
+class MioraApp extends ConsumerWidget {
+  const MioraApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,7 +21,7 @@ class ChronicleApp extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
-      title: 'Chronicle',
+      title: 'Miora',
       debugShowCheckedModeBanner: false,
       theme: ChronicleTheme.lightTheme,
       darkTheme: ChronicleTheme.darkTheme,
@@ -30,3 +30,6 @@ class ChronicleApp extends ConsumerWidget {
     );
   }
 }
+
+/// Backward compatibility alias
+typedef ChronicleApp = MioraApp;

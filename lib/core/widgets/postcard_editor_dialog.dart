@@ -16,7 +16,7 @@ class PostcardCustomizationData {
   const PostcardCustomizationData({
     required this.message,
     this.recipient = 'To: Dear Future Self',
-    this.location = 'CHRONICLE POST',
+    this.location = 'MIORA POST',
     required this.date,
     this.imagePath,
     this.stampColor = AppColors.postalStampRed,
@@ -110,7 +110,7 @@ class _PostcardEditorDialogState extends State<PostcardEditorDialog> {
   ];
 
   static const List<String> _popularCities = [
-    'CHRONICLE POST',
+    'MIORA POST',
     'PARIS',
     'KYOTO',
     'NEW YORK',

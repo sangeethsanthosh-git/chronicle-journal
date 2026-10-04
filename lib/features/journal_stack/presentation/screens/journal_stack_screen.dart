@@ -275,12 +275,12 @@ class _JournalStackScreenState extends ConsumerState<JournalStackScreen>
                         Text(
                           stackState.showArchived
                               ? 'Preserved chapters and past journeys'
-                              : 'Chronicles, Memories, and Reflection',
+                              : 'Your thoughts. Your moments. Your story.',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontStyle: FontStyle.italic,
                             fontSize: 14,
-                            color: Color(0xFF7A6B5D),
+                            color: Color(0xFF453D37),
                             letterSpacing: 0.5,
                           ),
                         ),
@@ -443,12 +443,12 @@ class _JournalStackScreenState extends ConsumerState<JournalStackScreen>
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 24.0),
                       child: Text(
-                        'Chronicle • Illustrated Living Journal',
+                        'Miora • Your thoughts. Your moments. Your story.',
                         style: TextStyle(
                           fontFamily: 'serif',
                           fontSize: 11,
                           letterSpacing: 1.2,
-                          color: const Color(0xFF8C7355).withValues(alpha: 0.7),
+                          color: const Color(0xFF453D37).withValues(alpha: 0.85),
                         ),
                       ),
                     ),

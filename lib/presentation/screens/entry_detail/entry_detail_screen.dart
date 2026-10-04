@@ -112,7 +112,7 @@ class EntryDetailScreen extends ConsumerWidget {
                     SharePlus.instance.share(
                       ShareParams(
                         text:
-                            '${entry.title}\n\n${entry.content}\n\n— Written on Chronicle',
+                            '${entry.title}\n\n${entry.content}\n\n— Written on Miora',
                       ),
                     );
                   },

@@ -101,7 +101,7 @@ void main() {
           ),
         );
 
-        expect(find.text('CHRONICLE CODEX'), findsOneWidget);
+        expect(find.text('MIORA CODEX'), findsOneWidget);
         expect(find.text('5 d'), findsOneWidget);
         expect(find.text('12 Entries'), findsOneWidget);
         expect(find.text('Writing Rhythm'), findsOneWidget);

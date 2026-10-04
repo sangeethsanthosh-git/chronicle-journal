@@ -20,9 +20,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final List<Map<String, String>> _pages = [
     {
       'emoji': '📖',
-      'title': 'An Artisanal Journal',
+      'title': 'Welcome to Miora',
       'subtitle':
-          'Inspired by physical scrapbooks, polaroids, washi tape, and vintage stationery. A tactile writing sanctuary for your mind.',
+          'Your thoughts. Your moments. Your story. An artisanal sanctuary inspired by physical scrapbooks, polaroids, washi tape, and living books.',
     },
     {
       'emoji': '🔒',

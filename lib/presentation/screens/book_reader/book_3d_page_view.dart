@@ -365,11 +365,11 @@ class _Book3DPageViewState extends State<Book3DPageView> {
                                   color: const Color(0xFFFBF8EE),
                                   child: const Center(
                                     child: Text(
-                                      '~ Chronicle Archive ~',
+                                      '~ Miora Archive ~',
                                       style: TextStyle(
                                         fontFamily: 'serif',
                                         fontStyle: FontStyle.italic,
-                                        color: Color(0xFF9E958D),
+                                        color: Color(0xFF453D37),
                                       ),
                                     ),
                                   ),

@@ -175,9 +175,9 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
         JournalPageSpread(
           leftContent: const JournalPageContent(
             type: JournalPageType.textOpening,
-            title: 'Welcome to Chronicle',
+            title: 'Welcome to Miora',
             bodyText:
-                'A quiet place for your thoughts, memories, and stories. Tap the pen to write your first entry.',
+                'Your thoughts. Your moments. Your story. Tap the pen to write your first entry.',
             pageNumber: 1,
           ),
           rightContent: const JournalPageContent(
@@ -492,7 +492,7 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
                       : null,
                   message: activeEntry.entry.content,
                   date: activeEntry.entry.entryDate,
-                  location: activeEntry.entry.locationName ?? 'CHRONICLE POST',
+                  location: activeEntry.entry.locationName ?? 'MIORA POST',
                   recipient: 'To: Dear Future Self',
                 ),
               ),

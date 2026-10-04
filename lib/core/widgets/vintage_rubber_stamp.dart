@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 /// Distressed circular rubber stamp seal inspired by reference Image 2
-/// ("EXCELLENT QUALITY BESPOKE ARTWORK / CHRONICLE ARCHIVE").
+/// ("EXCELLENT QUALITY BESPOKE ARTWORK / MIORA ARCHIVE").
 class VintageRubberStamp extends StatelessWidget {
   final String text;
   final String centerText;
@@ -12,7 +12,7 @@ class VintageRubberStamp extends StatelessWidget {
 
   const VintageRubberStamp({
     super.key,
-    this.text = 'CHRONICLE ARCHIVE • BESPOKE QUALITY',
+    this.text = 'MIORA ARCHIVE • BESPOKE QUALITY',
     this.centerText = 'VERIFIED',
     this.color = const Color(0xFF9E3A2B), // Distressed brick red
     this.size = 80.0,

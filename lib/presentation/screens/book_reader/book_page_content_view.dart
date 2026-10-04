@@ -138,7 +138,7 @@ class BookPageContentView extends StatelessWidget {
                   children: [
                     PostalStamp(
                       dateText: DateFormat('dd.MM.yy').format(page.date),
-                      locationText: (page.location ?? 'JOURNAL').toUpperCase(),
+                      locationText: (page.location ?? 'MIORA').toUpperCase(),
                       size: 38,
                       color: AppColors.postalStampRed,
                     ),
@@ -152,7 +152,7 @@ class BookPageContentView extends StatelessWidget {
                     fontFamily: 'serif',
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF6E655F),
+                    color: Color(0xFF453D37),
                   ),
                 ),
               ],
@@ -165,7 +165,7 @@ class BookPageContentView extends StatelessWidget {
               // Postal Stamp with date & location
               PostalStamp(
                 dateText: DateFormat('dd.MM.yy').format(page.date),
-                locationText: (page.location ?? 'JOURNAL').toUpperCase(),
+                locationText: (page.location ?? 'MIORA').toUpperCase(),
                 size: 52,
                 color: AppColors.postalStampRed,
               ),
@@ -180,7 +180,7 @@ class BookPageContentView extends StatelessWidget {
                         fontFamily: 'serif',
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF6E655F),
+                        color: Color(0xFF453D37),
                         letterSpacing: 0.3,
                       ),
                     ),
@@ -192,7 +192,7 @@ class BookPageContentView extends StatelessWidget {
                           fontFamily: 'serif',
                           fontSize: 11,
                           fontStyle: FontStyle.italic,
-                          color: Color(0xFF8B8279),
+                          color: Color(0xFF453D37),
                         ),
                       ),
                     ],
@@ -229,14 +229,14 @@ class BookPageContentView extends StatelessWidget {
             fontSize: 10,
             letterSpacing: 1.2,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF9E958D),
+            color: Color(0xFF453D37),
           ),
         ),
         if (page.doodle != null)
           BookMarginDoodle(
             type: page.doodle!,
             size: 26,
-            color: const Color(0xFF7A6D60),
+            color: const Color(0xFF453D37),
           ),
       ],
     );
@@ -299,7 +299,7 @@ class BookPageContentView extends StatelessWidget {
               fontFamily: 'serif',
               fontSize: 15,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF2C2621),
+              color: Color(0xFF1E1A17),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -326,7 +326,7 @@ class BookPageContentView extends StatelessWidget {
                 margin: const EdgeInsets.only(right: 6, bottom: 2),
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2C2621),
+                  color: const Color(0xFF1E1A17),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -346,7 +346,7 @@ class BookPageContentView extends StatelessWidget {
                 fontFamily: 'serif',
                 fontSize: 14.5,
                 height: 1.65,
-                color: Color(0xFF2C2621),
+                color: Color(0xFF1E1A17),
               ),
             ),
           ],
@@ -361,7 +361,7 @@ class BookPageContentView extends StatelessWidget {
         fontFamily: 'serif',
         fontSize: 14.5,
         height: 1.65,
-        color: Color(0xFF2C2621),
+        color: Color(0xFF1E1A17),
       ),
     );
   }
@@ -404,12 +404,12 @@ class BookPageContentView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  '— Recorded in Chronicle',
+                  '— Recorded in Miora',
                   style: TextStyle(
                     fontFamily: 'serif',
                     fontSize: 12,
                     fontStyle: FontStyle.italic,
-                    color: Color(0xFF7A6D60),
+                    color: Color(0xFF453D37),
                   ),
                 ),
                 if (page.isFavorite) ...[
@@ -438,7 +438,7 @@ class BookPageContentView extends StatelessWidget {
             // Distressed vintage rubber stamp seal
             const VintageRubberStamp(
               size: 64,
-              text: 'CHRONICLE ARCHIVE • BESPOKE QUALITY',
+              text: 'MIORA ARCHIVE • BESPOKE QUALITY',
               centerText: 'VERIFIED',
               rotationDegrees: -8,
             ),
@@ -458,7 +458,7 @@ class BookPageContentView extends StatelessWidget {
             BookMarginDoodle(
               type: page.doodle!,
               size: 24,
-              color: const Color(0xFF8B7E72),
+              color: const Color(0xFF453D37),
             )
           else
             const SizedBox(width: 24),
@@ -471,7 +471,7 @@ class BookPageContentView extends StatelessWidget {
               fontSize: 12,
               fontWeight: FontWeight.bold,
               letterSpacing: 2.0,
-              color: Color(0xFF7A6D60),
+              color: Color(0xFF453D37),
             ),
           ),
 
@@ -479,7 +479,7 @@ class BookPageContentView extends StatelessWidget {
             BookMarginDoodle(
               type: page.doodle!,
               size: 24,
-              color: const Color(0xFF8B7E72),
+              color: const Color(0xFF453D37),
             )
           else
             const SizedBox(width: 24),

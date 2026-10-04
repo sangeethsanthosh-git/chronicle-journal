@@ -10,9 +10,9 @@ class AppColors {
   static const Color ruledMarginColorLight = Color(0xFFF0B6B6);
   static const Color gridDotColorLight = Color(0xFFCCC5B8);
 
-  static const Color inkPrimaryLight = Color(0xFF2C2621);
-  static const Color inkSecondaryLight = Color(0xFF6E655F);
-  static const Color inkMutedLight = Color(0xFF9E958D);
+  static const Color inkPrimaryLight = Color(0xFF1E1A17); // Deep warm charcoal ink (13:1 contrast)
+  static const Color inkSecondaryLight = Color(0xFF453D37); // Dark espresso ink (7.5:1 contrast)
+  static const Color inkMutedLight = Color(0xFF5E544C); // Rich sepia ink (5.2:1 contrast, WCAG AA compliant)
 
   // Dark Palette - Aged Charcoal & Nocturnal Parchment
   static const Color paperBackgroundDark = Color(0xFF1C1A17);
@@ -23,9 +23,9 @@ class AppColors {
   static const Color ruledMarginColorDark = Color(0xFF523B3B);
   static const Color gridDotColorDark = Color(0xFF454038);
 
-  static const Color inkPrimaryDark = Color(0xFFEAE3D9);
-  static const Color inkSecondaryDark = Color(0xFFB5ADA3);
-  static const Color inkMutedDark = Color(0xFF837B72);
+  static const Color inkPrimaryDark = Color(0xFFF7F3EB); // Crisp warm cream
+  static const Color inkSecondaryDark = Color(0xFFD9D0C3); // Clear light parchment
+  static const Color inkMutedDark = Color(0xFFB5ABA0); // Soft warm stone (4.8:1 contrast)
 
   // Vintage Accents & Stationery Colors
   static const Color vintageGold = Color(0xFFC5A059);

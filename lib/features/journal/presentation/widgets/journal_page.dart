@@ -164,7 +164,7 @@ class JournalPageContent {
         date: entry.entryDate,
         quoteText:
             '“Write down what you cannot say aloud. Small moments build a lifetime of wonder.”',
-        quoteAuthor: 'Chronicle Study Notes',
+        quoteAuthor: 'Miora Study Notes',
       ),
     );
 
@@ -238,7 +238,7 @@ class JournalPageWidget extends StatelessWidget {
                   fontFamily: 'serif',
                   fontSize: 10,
                   fontStyle: FontStyle.italic,
-                  color: Color(0xFF8B8279),
+                  color: Color(0xFF453D37),
                   letterSpacing: 1.2,
                 ),
               ),
@@ -294,7 +294,7 @@ class JournalPageWidget extends StatelessWidget {
                       fontSize: 9.5,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.5,
-                      color: Color(0xFF8B7E72),
+                      color: Color(0xFF453D37),
                     ),
                   ),
                   if (content.location != null &&
@@ -305,7 +305,7 @@ class JournalPageWidget extends StatelessWidget {
                         const Icon(
                           Icons.place_outlined,
                           size: 10,
-                          color: Color(0xFF8B7E72),
+                          color: Color(0xFF453D37),
                         ),
                         const SizedBox(width: 3),
                         Text(
@@ -314,7 +314,7 @@ class JournalPageWidget extends StatelessWidget {
                             fontFamily: 'serif',
                             fontSize: 9.5,
                             fontStyle: FontStyle.italic,
-                            color: Color(0xFF8B7E72),
+                            color: Color(0xFF453D37),
                           ),
                         ),
                       ],
@@ -326,7 +326,7 @@ class JournalPageWidget extends StatelessWidget {
             if (content.date != null)
               PostalStamp(
                 dateText: DateFormat('dd.MM.yy').format(content.date!),
-                locationText: 'CHRONICLE',
+                locationText: 'MIORA',
                 size: 36,
                 color: AppColors.postalStampBlue,
               ),
@@ -345,7 +345,7 @@ class JournalPageWidget extends StatelessWidget {
               fontFamily: 'serif',
               fontSize: 17,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF2C2621),
+              color: Color(0xFF1E1A17),
               height: 1.25,
             ),
           ),
@@ -370,7 +370,7 @@ class JournalPageWidget extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: 'serif',
                       fontStyle: FontStyle.italic,
-                      color: Color(0xFFAAA095),
+                      color: Color(0xFF5E544C),
                       fontSize: 12,
                     ),
                   ),
@@ -398,7 +398,7 @@ class JournalPageWidget extends StatelessWidget {
                             fontFamily: 'serif',
                             fontSize: 12.5,
                             height: 1.6,
-                            color: Color(0xFF2A231C),
+                            color: Color(0xFF1E1A17),
                           ),
                         ),
                       ],
@@ -458,7 +458,7 @@ class JournalPageWidget extends StatelessWidget {
                       child: Icon(
                         Icons.photo_camera_outlined,
                         size: 36,
-                        color: Colors.black38,
+                        color: Color(0xFF5E544C),
                       ),
                     ),
                   ),
@@ -479,7 +479,7 @@ class JournalPageWidget extends StatelessWidget {
                   fontFamily: 'serif',
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF2C2621),
+                  color: Color(0xFF1E1A17),
                 ),
               ),
               const SizedBox(height: 4),
@@ -492,7 +492,7 @@ class JournalPageWidget extends StatelessWidget {
                   fontSize: 11.5,
                   height: 1.5,
                   fontStyle: FontStyle.italic,
-                  color: Color(0xFF5E544A),
+                  color: Color(0xFF453D37),
                 ),
               ),
             ],
@@ -509,7 +509,7 @@ class JournalPageWidget extends StatelessWidget {
       children: [
         // Vintage Archive Rubber Seal
         const VintageRubberStamp(
-          text: 'CHRONICLE ARCHIVE • BESPOKE QUALITY',
+          text: 'MIORA ARCHIVE • BESPOKE QUALITY',
           centerText: 'VERIFIED',
           size: 48,
           color: AppColors.postalStampRed,
@@ -530,7 +530,7 @@ class JournalPageWidget extends StatelessWidget {
               fontSize: 12.5,
               fontStyle: FontStyle.italic,
               height: 1.45,
-              color: Color(0xFF2A231C),
+              color: Color(0xFF1E1A17),
             ),
           ),
         ),
@@ -543,7 +543,7 @@ class JournalPageWidget extends StatelessWidget {
               fontFamily: 'serif',
               fontSize: 10,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF8B8279),
+              color: Color(0xFF453D37),
             ),
           ),
         ],
@@ -574,7 +574,7 @@ class JournalPageWidget extends StatelessWidget {
           fontFamily: 'serif',
           fontSize: 12.5,
           height: 1.6,
-          color: Color(0xFF2A231C),
+          color: Color(0xFF1E1A17),
         ),
       ),
     );

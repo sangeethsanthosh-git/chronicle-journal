@@ -58,7 +58,7 @@ void main() {
           home: Scaffold(
             body: Center(
               child: VintageRubberStamp(
-                text: 'CHRONICLE ARCHIVE • BESPOKE QUALITY',
+                text: 'MIORA ARCHIVE • BESPOKE QUALITY',
                 centerText: 'VERIFIED',
                 size: 80,
               ),

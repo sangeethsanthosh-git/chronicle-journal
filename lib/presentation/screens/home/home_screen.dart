@@ -189,7 +189,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'CHRONICLE',
+                'MIORA',
                 style: TextStyle(
                   fontFamily: 'serif',
                   fontWeight: FontWeight.w900,
@@ -365,7 +365,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         fontFamily: 'serif',
                         fontSize: 24,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF2C2621),
+                        color: Color(0xFF1E1A17),
                         letterSpacing: 0.3,
                       ),
                     ),
@@ -376,7 +376,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         fontFamily: 'serif',
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF6E655F),
+                        color: Color(0xFF453D37),
                       ),
                     ),
                   ],
@@ -385,7 +385,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               // Postal cancellation stamp in the corner
               PostalStamp(
                 dateText: DateFormat('dd.MM.yy').format(now),
-                locationText: 'CHRONICLE',
+                locationText: 'MIORA',
                 size: 44,
                 color: AppColors.postalStampBlue,
               ),
@@ -516,7 +516,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.2,
-                      color: Color(0xFF2C2218),
+                      color: Color(0xFF1E1A17),
                     ),
                   ),
                   SizedBox(height: 2),
@@ -525,7 +525,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     style: TextStyle(
                       fontStyle: FontStyle.italic,
                       fontSize: 11,
-                      color: Color(0xFF7A6B5D),
+                      color: Color(0xFF453D37),
                     ),
                   ),
                 ],
@@ -767,7 +767,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // Circular Distressed Rubber Stamp Seal
           const VintageRubberStamp(
             size: 60,
-            text: 'CHRONICLE ARCHIVE • BESPOKE QUALITY',
+            text: 'MIORA ARCHIVE • BESPOKE QUALITY',
             centerText: 'ACTIVE',
             color: Color(0xFF8B2635),
             rotationDegrees: -8,
@@ -783,7 +783,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     fontFamily: 'serif',
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2C2621),
+                    color: Color(0xFF1E1A17),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -794,7 +794,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   style: const TextStyle(
                     fontFamily: 'serif',
                     fontSize: 11,
-                    color: Color(0xFF7A6F62),
+                    color: Color(0xFF453D37),
                   ),
                 ),
               ],

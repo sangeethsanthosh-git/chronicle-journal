@@ -44,10 +44,10 @@ android {
     signingConfigs {
         create("release") {
             if (hasReleaseKey) {
-                keyAlias = keystoreProperties.getProperty("keyAlias") ?: "chronicle"
-                keyPassword = keystoreProperties.getProperty("keyPassword") ?: "chronicle2026"
-                storeFile = file(keystoreProperties.getProperty("storeFile") ?: "chronicle-release-key.jks")
-                storePassword = keystoreProperties.getProperty("storePassword") ?: "chronicle2026"
+                keyAlias = keystoreProperties.getProperty("keyAlias") ?: "miora"
+                keyPassword = keystoreProperties.getProperty("keyPassword") ?: "miora2026"
+                storeFile = file(keystoreProperties.getProperty("storeFile") ?: "miora-release-key.jks")
+                storePassword = keystoreProperties.getProperty("storePassword") ?: "miora2026"
                 enableV1Signing = true
                 enableV2Signing = true
                 enableV3Signing = true

@@ -33,6 +33,12 @@ class MainActivity : FlutterActivity() {
                 }
                 "requestPermission" -> {
                     try {
+                        val compName = ComponentName(this, MediaNotificationListenerService::class.java)
+                        packageManager.setComponentEnabledSetting(
+                            compName,
+                            android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                            android.content.pm.PackageManager.DONT_KILL_APP
+                        )
                         val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         startActivity(intent)
@@ -65,6 +71,12 @@ class MainActivity : FlutterActivity() {
             for (name in names) {
                 val cn = ComponentName.unflattenFromString(name)
                 if (cn != null && cn.packageName == pkgName) {
+                    val compName = ComponentName(this, MediaNotificationListenerService::class.java)
+                    packageManager.setComponentEnabledSetting(
+                        compName,
+                        android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                        android.content.pm.PackageManager.DONT_KILL_APP
+                    )
                     return true
                 }
             }

@@ -271,7 +271,7 @@ class EntryCard extends StatelessWidget {
                           'dd.MM.yy',
                         ).format(entry.entryDate),
                         locationText:
-                            entry.locationName?.toUpperCase() ?? 'CHRONICLE',
+                            entry.locationName?.toUpperCase() ?? 'MIORA',
                         size: 54,
                       ),
                       MoodBadge(

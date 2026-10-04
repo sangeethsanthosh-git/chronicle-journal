@@ -259,22 +259,24 @@ class _JournalBookState extends State<JournalBook>
                       child: Column(
                         children: const [
                           Text(
-                            'CHRONICLE',
+                            'MIORA',
                             style: TextStyle(
                               fontFamily: 'serif',
-                              fontSize: 16,
+                              fontSize: 18,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 4.0,
                               color: Color(0xFFFAF7EE),
                             ),
                           ),
-                          SizedBox(height: 2),
+                          SizedBox(height: 3),
                           Text(
-                            '— MEMORIES & DAYS —',
+                            '— YOUR THOUGHTS. YOUR MOMENTS. YOUR STORY. —',
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               fontFamily: 'serif',
-                              fontSize: 8,
-                              letterSpacing: 2.0,
+                              fontSize: 7.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
                               color: Color(0xFFC5A059),
                             ),
                           ),
@@ -286,9 +288,10 @@ class _JournalBookState extends State<JournalBook>
                       'Tap to Open Journal',
                       style: TextStyle(
                         fontFamily: 'serif',
-                        fontSize: 10,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
                         fontStyle: FontStyle.italic,
-                        color: Color(0xFFDED6C4),
+                        color: Color(0xFFFAF7EE),
                       ),
                     ),
                   ],

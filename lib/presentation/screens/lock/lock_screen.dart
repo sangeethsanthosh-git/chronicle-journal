@@ -80,7 +80,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                widget.isSettingPin ? 'Set 4-Digit PIN' : 'Chronicle is Locked',
+                widget.isSettingPin ? 'Set 4-Digit PIN' : 'Miora is Locked',
                 style: TextStyle(
                   fontFamily: 'serif',
                   fontSize: 22,

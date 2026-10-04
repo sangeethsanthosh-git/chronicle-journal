@@ -348,7 +348,7 @@ class SettingsScreen extends ConsumerWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: const Text(
-                                'Android requires Notification Access to detect media playback. Enable Chronicle in system settings.',
+                                'Android requires Notification Access to detect media playback. Enable Miora in system settings.',
                               ),
                               action: SnackBarAction(
                                 label: 'Settings',
@@ -565,25 +565,26 @@ class SettingsScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   Text(
-                    'Chronicle v1.0.0',
+                    'Miora v1.0.0',
                     style: TextStyle(
                       fontFamily: 'serif',
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontSize: 15,
                       color: isDark
-                          ? AppColors.inkSecondaryDark
-                          : AppColors.inkSecondaryLight,
+                          ? AppColors.inkPrimaryDark
+                          : AppColors.inkPrimaryLight,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Offline-first, artisanal journaling for Flutter.',
+                    'Your thoughts. Your moments. Your story.',
                     style: TextStyle(
                       fontFamily: 'serif',
-                      fontSize: 12,
+                      fontSize: 12.5,
+                      fontStyle: FontStyle.italic,
                       color: isDark
-                          ? AppColors.inkMutedDark
-                          : AppColors.inkMutedLight,
+                          ? AppColors.inkSecondaryDark
+                          : AppColors.inkSecondaryLight,
                     ),
                   ),
                 ],

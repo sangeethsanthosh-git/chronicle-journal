@@ -54,7 +54,7 @@ class PdfExporter {
                   ),
                   pw.SizedBox(height: 20),
                   pw.Text(
-                    'CHRONICLE',
+                    'MIORA',
                     style: pw.TextStyle(
                       fontSize: 38,
                       fontWeight: pw.FontWeight.bold,
@@ -80,7 +80,7 @@ class PdfExporter {
                   ),
                   pw.SizedBox(height: 48),
                   pw.Text(
-                    'A collection of preserved memories, reflections, and quiet moments.',
+                    'Your thoughts. Your moments. Your story.',
                     style: pw.TextStyle(
                       fontSize: 12,
                       fontStyle: pw.FontStyle.italic,
@@ -147,7 +147,7 @@ class PdfExporter {
                       // Circular Postmark with wavy cancellation lines
                       _buildPdfPostalStamp(
                         e.entry.entryDate,
-                        e.entry.locationName ?? 'CHRONICLE',
+                        e.entry.locationName ?? 'MIORA',
                       ),
                       // Date, Mood & Weather
                       pw.Column(
@@ -261,7 +261,7 @@ class PdfExporter {
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
                           pw.Text(
-                            '— Recorded in Chronicle Journal',
+                            '— Recorded in Miora Journal',
                             style: pw.TextStyle(
                               fontSize: 9,
                               fontStyle: pw.FontStyle.italic,
@@ -296,7 +296,7 @@ class PdfExporter {
     await Printing.layoutPdf(
       onLayout: (PdfPageFormat format) async => pdf.save(),
       name:
-          'Chronicle_Scrapbook_${DateFormat('yyyyMMdd').format(DateTime.now())}.pdf',
+          'Miora_Scrapbook_${DateFormat('yyyyMMdd').format(DateTime.now())}.pdf',
     );
   }
 
@@ -550,7 +550,7 @@ class PdfExporter {
             mainAxisAlignment: pw.MainAxisAlignment.center,
             children: [
               pw.Text(
-                'CHRONICLE',
+                'MIORA',
                 style: pw.TextStyle(
                   fontSize: 5.5,
                   fontWeight: pw.FontWeight.bold,

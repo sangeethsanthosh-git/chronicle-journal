@@ -43,13 +43,13 @@ class CodexAchievementsPage extends StatelessWidget {
                   ),
                   SizedBox(width: 8),
                   Text(
-                    'CHRONICLE CODEX',
+                    'MIORA CODEX',
                     style: TextStyle(
                       fontFamily: 'serif',
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.5,
-                      color: Color(0xFF2C2218),
+                      color: Color(0xFF1E1A17),
                     ),
                   ),
                 ],

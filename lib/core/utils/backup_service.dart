@@ -34,7 +34,7 @@ class BackupService {
     }).toList();
 
     final data = {
-      'app': 'Chronicle',
+      'app': 'Miora',
       'version': '1.0.0',
       'exportedAt': DateTime.now().toIso8601String(),
       'entries': list,
@@ -49,14 +49,14 @@ class BackupService {
     final jsonStr = await generateJsonBackup(entries);
     final tempDir = await getTemporaryDirectory();
     final fileName =
-        'chronicle_backup_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.json';
+        'miora_backup_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.json';
     final file = File('${tempDir.path}/$fileName');
     await file.writeAsString(jsonStr);
 
     await SharePlus.instance.share(
       ShareParams(
         files: [XFile(file.path)],
-        subject: 'Chronicle Journal Backup ($fileName)',
+        subject: 'Miora Journal Backup ($fileName)',
       ),
     );
   }
@@ -68,7 +68,7 @@ class BackupService {
     final dateFormat = DateFormat('EEEE, MMMM d, yyyy • h:mm a');
 
     buffer.writeln('========================================');
-    buffer.writeln('CHRONICLE JOURNAL ARCHIVE');
+    buffer.writeln('MIORA JOURNAL ARCHIVE');
     buffer.writeln('Generated: ${DateFormat.yMMMMd().format(DateTime.now())}');
     buffer.writeln('Total Entries: ${entries.length}');
     buffer.writeln('========================================\n\n');
@@ -98,14 +98,14 @@ class BackupService {
 
     final tempDir = await getTemporaryDirectory();
     final fileName =
-        'chronicle_journal_${DateFormat('yyyyMMdd').format(DateTime.now())}.txt';
+        'miora_journal_${DateFormat('yyyyMMdd').format(DateTime.now())}.txt';
     final file = File('${tempDir.path}/$fileName');
     await file.writeAsString(buffer.toString());
 
     await SharePlus.instance.share(
       ShareParams(
         files: [XFile(file.path)],
-        subject: 'Chronicle Journal Plaintext Archive',
+        subject: 'Miora Journal Plaintext Archive',
       ),
     );
   }
