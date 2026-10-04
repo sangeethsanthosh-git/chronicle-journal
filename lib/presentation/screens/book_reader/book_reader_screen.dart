@@ -5,14 +5,18 @@ import 'package:intl/intl.dart';
 
 import '../../../core/widgets/book_spread_frame.dart';
 import '../../../core/widgets/desk_background.dart';
+import '../../../core/widgets/ring_binder_frame.dart';
+import '../../../core/widgets/vintage_postcard_widget.dart';
 import '../../../domain/models/journal_entry_with_details.dart';
 import '../../providers/journal_providers.dart';
 import 'book_3d_page_view.dart';
 import 'book_page_data.dart';
 
+enum ReaderBindingStyle { ringBinder, hardcover, postcard }
+
 /// Immersive Book Reader Screen allowing users to read their journal entries
-/// like a real physical book resting on a wooden desk, featuring 3D page-flip
-/// animations, authentic paper textures, stamps, taped polaroids, and doodles.
+/// like a real physical ring binder or hardcover book resting on a desk,
+/// or as an authentic vintage postcard spread.
 class BookReaderScreen extends ConsumerStatefulWidget {
   final String? entryId;
 
@@ -27,6 +31,7 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
   int _currentPageIndex = 0;
   bool _showControls = true;
   bool _isDualSpread = false;
+  ReaderBindingStyle _bindingStyle = ReaderBindingStyle.ringBinder;
   String? _selectedEntryId;
 
   @override
@@ -266,28 +271,70 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
           final screenWidth = MediaQuery.of(context).size.width;
           final isWide = screenWidth > 600 || _isDualSpread;
 
-          return DeskBackground(
-            child: SafeArea(
+          Widget readerContent;
+
+          if (_bindingStyle == ReaderBindingStyle.postcard) {
+            // Vintage Postcard Mode (Image 1)
+            readerContent = Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.only(top: 60, bottom: 80),
+                child: VintagePostcardWidget(
+                  imagePath: activeEntry.photoAttachments.isNotEmpty
+                      ? activeEntry.photoAttachments.first.uri
+                      : null,
+                  message: activeEntry.entry.content,
+                  date: activeEntry.entry.entryDate,
+                  location: activeEntry.entry.locationName ?? 'CHRONICLE POST',
+                  recipient: 'To: Dear Future Self',
+                ),
+              ),
+            );
+          } else if (_bindingStyle == ReaderBindingStyle.ringBinder) {
+            // Ring Binder Journal on Slate Blue Desk (Image 4)
+            readerContent = RingBinderFrame(
+              isDualSpread: isWide,
+              reminderQuote: 'reminder: progress matters more than perfection.',
+              child: Book3DPageView(
+                pages: bookPages,
+                controller: _pageController,
+                isDualSpread: isWide,
+                onPageChanged: (idx) {
+                  setState(() => _currentPageIndex = idx);
+                },
+              ),
+            );
+          } else {
+            // Classic Leather Hardcover on Wood Desk
+            readerContent = DeskBackground(
+              child: BookSpreadFrame(
+                isDualSpread: isWide,
+                isLeftPage: _currentPageIndex % 2 == 0,
+                child: Book3DPageView(
+                  pages: bookPages,
+                  controller: _pageController,
+                  isDualSpread: isWide,
+                  onPageChanged: (idx) {
+                    setState(() => _currentPageIndex = idx);
+                  },
+                ),
+              ),
+            );
+          }
+
+          return Scaffold(
+            backgroundColor: _bindingStyle == ReaderBindingStyle.ringBinder
+                ? const Color(0xFF384756)
+                : const Color(0xFF2C1B10),
+            body: SafeArea(
               child: Stack(
                 children: [
-                  // The Open Physical Book
+                  // The Reader Workspace
                   Positioned.fill(
                     child: GestureDetector(
                       onTap: () {
                         setState(() => _showControls = !_showControls);
                       },
-                      child: BookSpreadFrame(
-                        isDualSpread: isWide,
-                        isLeftPage: _currentPageIndex % 2 == 0,
-                        child: Book3DPageView(
-                          pages: bookPages,
-                          controller: _pageController,
-                          isDualSpread: isWide,
-                          onPageChanged: (idx) {
-                            setState(() => _currentPageIndex = idx);
-                          },
-                        ),
-                      ),
+                      child: readerContent,
                     ),
                   ),
 
@@ -335,23 +382,49 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            // Spread Toggle (Single vs Dual Page)
-                            IconButton(
-                              icon: Icon(
-                                isWide ? Icons.auto_stories : Icons.menu_book,
+                            // Binding Style Selector (Binder / Hardcover / Postcard)
+                            PopupMenuButton<ReaderBindingStyle>(
+                              icon: const Icon(
+                                Icons.palette_outlined,
                                 color: Colors.white,
                               ),
-                              tooltip: isWide
-                                  ? 'Single Page View'
-                                  : 'Two-Page Spread View',
-                              onPressed: () {
-                                setState(() {
-                                  _isDualSpread = !_isDualSpread;
-                                  _currentPageIndex = 0;
-                                  _pageController = PageController();
-                                });
+                              tooltip: 'Switch Aesthetic Mode',
+                              onSelected: (style) {
+                                setState(() => _bindingStyle = style);
                               },
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: ReaderBindingStyle.ringBinder,
+                                  child: Text('📋 Ring Binder Desk (Image 4)'),
+                                ),
+                                const PopupMenuItem(
+                                  value: ReaderBindingStyle.hardcover,
+                                  child: Text('📖 Hardcover Journal'),
+                                ),
+                                const PopupMenuItem(
+                                  value: ReaderBindingStyle.postcard,
+                                  child: Text('✉️ Vintage Postcard (Image 1)'),
+                                ),
+                              ],
                             ),
+                            // Spread Toggle (Single vs Dual Page)
+                            if (_bindingStyle != ReaderBindingStyle.postcard)
+                              IconButton(
+                                icon: Icon(
+                                  isWide ? Icons.auto_stories : Icons.menu_book,
+                                  color: Colors.white,
+                                ),
+                                tooltip: isWide
+                                    ? 'Single Page View'
+                                    : 'Two-Page Spread View',
+                                onPressed: () {
+                                  setState(() {
+                                    _isDualSpread = !_isDualSpread;
+                                    _currentPageIndex = 0;
+                                    _pageController = PageController();
+                                  });
+                                },
+                              ),
                             // Table of Contents
                             IconButton(
                               icon: const Icon(

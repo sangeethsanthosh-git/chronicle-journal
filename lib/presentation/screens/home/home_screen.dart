@@ -2,19 +2,48 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../../core/constants/quotes.dart';
+
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/cassette_tape_widget.dart';
 import '../../../core/widgets/mood_badge.dart';
-import '../../../core/widgets/paper_background.dart';
+import '../../../core/widgets/polaroid_card.dart';
+import '../../../core/widgets/postal_stamp.dart';
+import '../../../core/widgets/ring_binder_frame.dart';
+import '../../../core/widgets/torn_paper_card.dart';
+import '../../../core/widgets/vintage_postcard_widget.dart';
+import '../../../core/widgets/vintage_rubber_stamp.dart';
 import '../../../core/widgets/washi_tape.dart';
 import '../../providers/journal_providers.dart';
 import '../../providers/memories_provider.dart';
-import '../../providers/preferences_provider.dart';
 import '../../providers/statistics_provider.dart';
-import '../timeline/entry_card.dart';
 
-class HomeScreen extends ConsumerWidget {
+enum HomeDeskMode { ringBinder, postcardRack }
+
+/// The primary Home Screen built entirely around the tactile physical
+/// Ring-Binder Journal & Scrapbook / Postcard interface from reference Images 1-4:
+/// - Open 3-ring binder on calm slate-blue desk with metallic binder rings
+/// - Paperclipped notes, polaroid photos, and washi tapes
+/// - Retro cassette tape player for voice memos
+/// - Distressed circular rubber stamps and postal cancellation postmarks
+/// - Bottom desk reminder quote bar: "reminder: progress matters more than perfection."
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  HomeDeskMode _deskMode = HomeDeskMode.ringBinder;
+  int _quoteIndex = 0;
+
+  static const List<String> _deskQuotes = [
+    'reminder: progress matters more than perfection.',
+    'every day holds a memory waiting to be preserved.',
+    'write what you cannot say aloud.',
+    'small moments build a lifetime of wonder.',
+    'be gentle with yourself on this page.',
+  ];
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
@@ -23,533 +52,813 @@ class HomeScreen extends ConsumerWidget {
     return 'Good evening';
   }
 
+  void _cycleQuote() {
+    setState(() {
+      _quoteIndex = (_quoteIndex + 1) % _deskQuotes.length;
+    });
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final prefs = ref.watch(preferencesProvider);
+  Widget build(BuildContext context) {
     final todayEntry = ref.watch(todayEntryProvider);
     final stats = ref.watch(statisticsProvider);
     final memories = ref.watch(memoriesProvider);
     final recentEntries = ref.watch(filteredEntriesProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeQuote = _deskQuotes[_quoteIndex];
 
-    return PaperBackground(
-      paperStyle: prefs.defaultPaperStyle,
-      child: Scaffold(
+    return Scaffold(
+      backgroundColor: const Color(0xFF384756), // Slate blue desk (Image 4)
+      appBar: AppBar(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: Text(
-            'Chronicle',
-            style: TextStyle(
-              fontFamily: 'serif',
-              fontWeight: FontWeight.bold,
-              fontSize: 26,
-              letterSpacing: 0.5,
-              color: isDark
-                  ? AppColors.inkPrimaryDark
-                  : AppColors.inkPrimaryLight,
+        elevation: 0,
+        title: Row(
+          children: [
+            const Text(
+              'CHRONICLE',
+              style: TextStyle(
+                fontFamily: 'serif',
+                fontWeight: FontWeight.w900,
+                fontSize: 22,
+                letterSpacing: 3.0,
+                color: Color(0xFFFAF7EE),
+              ),
             ),
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.auto_stories_rounded),
-              tooltip: 'Read Journal as Book',
-              onPressed: () => context.push('/book-reader'),
-            ),
-            IconButton(
-              icon: const Icon(Icons.search_rounded),
-              onPressed: () => context.push('/search'),
-            ),
-            IconButton(
-              icon: const Icon(Icons.collections_bookmark_outlined),
-              onPressed: () => context.push('/collections'),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xFFC5A059),
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: const Text(
+                'VOL. 1',
+                style: TextStyle(
+                  fontFamily: 'serif',
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 1.0,
+                ),
+              ),
             ),
           ],
         ),
-        body: RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(allEntriesStreamProvider);
-          },
-          child: ListView(
-            padding: const EdgeInsets.symmetric(vertical: 12),
+        actions: [
+          // View Switcher: Ring Binder vs Postcard Rack
+          IconButton(
+            icon: Icon(
+              _deskMode == HomeDeskMode.ringBinder
+                  ? Icons.markunread_mailbox_outlined
+                  : Icons.auto_stories_outlined,
+              color: Colors.white,
+            ),
+            tooltip: _deskMode == HomeDeskMode.ringBinder
+                ? 'Switch to Postcard Rack (Image 1)'
+                : 'Switch to Ring Binder Desk (Image 4)',
+            onPressed: () {
+              setState(() {
+                _deskMode = _deskMode == HomeDeskMode.ringBinder
+                    ? HomeDeskMode.postcardRack
+                    : HomeDeskMode.ringBinder;
+              });
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.auto_stories_rounded, color: Colors.white),
+            tooltip: 'Read as Physical Book',
+            onPressed: () => context.push('/book-reader'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.search_rounded, color: Colors.white),
+            tooltip: 'Search Archive',
+            onPressed: () => context.push('/search'),
+          ),
+          IconButton(
+            icon: const Icon(
+              Icons.collections_bookmark_outlined,
+              color: Colors.white,
+            ),
+            tooltip: 'Collections',
+            onPressed: () => context.push('/collections'),
+          ),
+        ],
+      ),
+      body: _deskMode == HomeDeskMode.ringBinder
+          ? RingBinderFrame(
+              reminderQuote: activeQuote,
+              onReminderTap: _cycleQuote,
+              isDualSpread: false,
+              child: _buildBinderPageContent(
+                context,
+                todayEntry: todayEntry,
+                stats: stats,
+                memories: memories,
+                recentEntries: recentEntries,
+              ),
+            )
+          : _buildPostcardRackView(context, recentEntries: recentEntries),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF2C2621),
+        foregroundColor: const Color(0xFFFAF7EE),
+        tooltip: 'Write New Entry',
+        onPressed: () => context.push('/editor'),
+        child: const Icon(Icons.edit_outlined),
+      ),
+    );
+  }
+
+  /// The scrollable page content resting inside the 3-ring binder
+  Widget _buildBinderPageContent(
+    BuildContext context, {
+    required dynamic todayEntry,
+    required dynamic stats,
+    required List<dynamic> memories,
+    required List<dynamic> recentEntries,
+  }) {
+    final now = DateTime.now();
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(allEntriesStreamProvider);
+      },
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        children: [
+          // 1. Header Stamp, Greeting & Postal Cancellation Mark
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Header Greeting & Date
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       _getGreeting(),
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontFamily: 'serif',
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: isDark
-                            ? AppColors.inkPrimaryDark
-                            : AppColors.inkPrimaryLight,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF2C2621),
+                        letterSpacing: 0.3,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
-                      DateFormat('EEEE, MMMM d, yyyy').format(DateTime.now()),
-                      style: TextStyle(
+                      DateFormat('EEEE, MMMM d, yyyy').format(now),
+                      style: const TextStyle(
                         fontFamily: 'serif',
-                        fontSize: 14,
-                        color: isDark
-                            ? AppColors.inkSecondaryDark
-                            : AppColors.inkSecondaryLight,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF6E655F),
                       ),
                     ),
                   ],
                 ),
               ),
-
-              const SizedBox(height: 16),
-
-              // Streak & Quote Card
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? AppColors.paperCardDark
-                        : AppColors.paperCardLight,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isDark
-                          ? AppColors.paperCardBorderDark
-                          : AppColors.paperCardBorderLight,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppColors.vintageGold.withAlpha(40),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Text(
-                              '🔥',
-                              style: TextStyle(fontSize: 18),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${stats.currentStreak} Day Writing Streak',
-                                  style: const TextStyle(
-                                    fontFamily: 'serif',
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                Text(
-                                  stats.longestStreak > 0
-                                      ? 'Best: ${stats.longestStreak} days'
-                                      : 'Write daily to keep your flame lit',
-                                  style: TextStyle(
-                                    fontFamily: 'serif',
-                                    fontSize: 12,
-                                    color: isDark
-                                        ? AppColors.inkMutedDark
-                                        : AppColors.inkMutedLight,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (prefs.showQuotes) ...[
-                        const Divider(height: 20),
-                        Text(
-                          Quotes.getTodayQuote(),
-                          style: TextStyle(
-                            fontFamily: 'serif',
-                            fontStyle: FontStyle.italic,
-                            fontSize: 13,
-                            height: 1.4,
-                            color: isDark
-                                ? AppColors.inkSecondaryDark
-                                : AppColors.inkSecondaryLight,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+              // Postal cancellation stamp in the corner
+              PostalStamp(
+                dateText: DateFormat('dd.MM.yy').format(now),
+                locationText: 'CHRONICLE',
+                size: 44,
+                color: AppColors.postalStampBlue,
               ),
-
-              const SizedBox(height: 20),
-
-              // Today's Entry Spotlight
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Today\'s Page',
-                      style: TextStyle(
-                        fontFamily: 'serif',
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (todayEntry != null)
-                      TextButton.icon(
-                        icon: const Icon(Icons.edit_outlined, size: 16),
-                        label: const Text('Edit'),
-                        onPressed: () =>
-                            context.push('/editor?id=${todayEntry.entry.id}'),
-                      ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              if (todayEntry != null)
-                EntryCard(
-                  entryWithDetails: todayEntry,
-                  layout: prefs.defaultLayout,
-                )
-              else
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: InkWell(
-                    onTap: () => context.push('/editor'),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 28,
-                        horizontal: 20,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? AppColors.paperCardDark
-                            : AppColors.paperCardLight,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isDark
-                              ? AppColors.paperCardBorderDark
-                              : AppColors.paperCardBorderLight,
-                          style: BorderStyle.solid,
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          const Text('🖋️', style: TextStyle(fontSize: 32)),
-                          const SizedBox(height: 10),
-                          const Text(
-                            'How was your day?',
-                            style: TextStyle(
-                              fontFamily: 'serif',
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Record your reflections, memories, and thoughts.',
-                            style: TextStyle(
-                              fontFamily: 'serif',
-                              fontSize: 13,
-                              color: isDark
-                                  ? AppColors.inkSecondaryDark
-                                  : AppColors.inkSecondaryLight,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 14),
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.vintageGold,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 10,
-                              ),
-                            ),
-                            onPressed: () => context.push('/editor'),
-                            icon: const Icon(Icons.add, size: 18),
-                            label: const Text('Write Today\'s Entry'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-              const SizedBox(height: 24),
-
-              // Quick Actions Bar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildQuickAction(
-                      context,
-                      icon: Icons.edit_note_rounded,
-                      label: 'New Entry',
-                      onTap: () => context.push('/editor'),
-                    ),
-                    _buildQuickAction(
-                      context,
-                      icon: Icons.mood_rounded,
-                      label: 'Mood',
-                      onTap: () => context.push('/editor?focusMood=true'),
-                    ),
-                    _buildQuickAction(
-                      context,
-                      icon: Icons.camera_alt_outlined,
-                      label: 'Photo',
-                      onTap: () => context.push('/editor?pickPhoto=true'),
-                    ),
-                    _buildQuickAction(
-                      context,
-                      icon: Icons.mic_none_rounded,
-                      label: 'Voice',
-                      onTap: () => context.push('/editor?recordAudio=true'),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 28),
-
-              // Memories Section
-              if (memories.isNotEmpty) ...[
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      const Text(
-                        'On This Day',
-                        style: TextStyle(
-                          fontFamily: 'serif',
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: () => context.push('/memories'),
-                        child: const Text('View All'),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: 170,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: memories.length,
-                    itemBuilder: (context, index) {
-                      final memory = memories[index];
-                      return Container(
-                        width: 220,
-                        margin: const EdgeInsets.only(right: 12),
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? AppColors.paperCardDark
-                              : AppColors.paperCardLight,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: isDark
-                                ? AppColors.paperCardBorderDark
-                                : AppColors.paperCardBorderLight,
-                          ),
-                        ),
-                        child: InkWell(
-                          onTap: () =>
-                              context.push('/entry/${memory.entry.entry.id}'),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const WashiTape(
-                                    width: 50,
-                                    height: 14,
-                                    color: AppColors.washiTapeRose,
-                                  ),
-                                  const Spacer(),
-                                  Text(
-                                    memory.timeAgoDescription,
-                                    style: const TextStyle(
-                                      fontFamily: 'serif',
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.vintageGold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              if (memory.entry.entry.title.isNotEmpty)
-                                Text(
-                                  memory.entry.entry.title,
-                                  style: const TextStyle(
-                                    fontFamily: 'serif',
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              const SizedBox(height: 4),
-                              Expanded(
-                                child: Text(
-                                  memory.entry.entry.content,
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontFamily: 'serif',
-                                    fontSize: 12,
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ),
-                              Row(
-                                children: [
-                                  MoodBadge(
-                                    mood: memory.entry.mood,
-                                    intensity: memory.entry.entry.moodIntensity,
-                                    showLabel: false,
-                                  ),
-                                  const Spacer(),
-                                  Text(
-                                    DateFormat.yMMMd().format(
-                                      memory.entry.entry.entryDate,
-                                    ),
-                                    style: TextStyle(
-                                      fontFamily: 'serif',
-                                      fontSize: 10,
-                                      color: isDark
-                                          ? AppColors.inkMutedDark
-                                          : AppColors.inkMutedLight,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 28),
-              ],
-
-              // Recent Entries Header
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  'Recent Entries',
-                  style: TextStyle(
-                    fontFamily: 'serif',
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              if (recentEntries.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 30,
-                  ),
-                  child: Center(
-                    child: Text(
-                      'No journal entries yet.\nTap + to write your first page!',
-                      style: TextStyle(
-                        fontFamily: 'serif',
-                        fontSize: 14,
-                        color: isDark
-                            ? AppColors.inkMutedDark
-                            : AppColors.inkMutedLight,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                )
-              else
-                ...recentEntries
-                    .take(5)
-                    .map(
-                      (e) => EntryCard(
-                        entryWithDetails: e,
-                        layout: prefs.defaultLayout,
-                      ),
-                    ),
             ],
           ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: AppColors.inkPrimaryLight,
-          foregroundColor: AppColors.paperCardLight,
-          onPressed: () => context.push('/editor'),
-          child: const Icon(Icons.edit_outlined),
-        ),
+
+          const SizedBox(height: 14),
+
+          // 2. Tactile Stationery Action Strip (pinned like index tabs)
+          _buildStationeryTabs(context),
+
+          const SizedBox(height: 18),
+
+          // 3. Today's Entry Section (Image 4: Pinned with paperclip or taped)
+          _buildTodayBinderSection(context, todayEntry),
+
+          const SizedBox(height: 20),
+
+          // 4. Streak & Vintage Star Rubber Stamp Seal (Image 2)
+          _buildStreakAndSealSection(stats),
+
+          const SizedBox(height: 22),
+
+          // 5. Memories & Pinned Keepsakes ("On This Day")
+          if (memories.isNotEmpty) ...[
+            _buildMemoriesSection(context, memories),
+            const SizedBox(height: 22),
+          ],
+
+          // 6. Recent Journal Pages (Binder Archive)
+          _buildRecentPagesSection(context, recentEntries),
+        ],
       ),
     );
   }
 
-  Widget _buildQuickAction(
-    BuildContext context, {
+  /// Tactile stationery tab strip (Write, Voice Memo, Polaroid, Mood)
+  Widget _buildStationeryTabs(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF2ECE1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFDCD2C0)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildTabButton(
+            icon: Icons.edit_note_rounded,
+            label: 'Write',
+            onTap: () => context.push('/editor'),
+          ),
+          _buildTabDivider(),
+          _buildTabButton(
+            icon: Icons.mic_none_rounded,
+            label: 'Cassette Memo',
+            onTap: () => context.push('/editor?recordAudio=true'),
+          ),
+          _buildTabDivider(),
+          _buildTabButton(
+            icon: Icons.camera_alt_outlined,
+            label: 'Polaroid',
+            onTap: () => context.push('/editor?pickPhoto=true'),
+          ),
+          _buildTabDivider(),
+          _buildTabButton(
+            icon: Icons.mood_rounded,
+            label: 'Mood Seal',
+            onTap: () => context.push('/editor?focusMood=true'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabDivider() {
+    return Container(width: 1, height: 24, color: const Color(0xFFD4C8B5));
+  }
+
+  Widget _buildTabButton({
     required IconData icon,
     required String label,
     required VoidCallback onTap,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: 76,
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.paperCardDark : AppColors.paperCardLight,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isDark
-                ? AppColors.paperCardBorderDark
-                : AppColors.paperCardBorderLight,
-          ),
-        ),
+      borderRadius: BorderRadius.circular(6),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 24, color: AppColors.vintageGold),
-            const SizedBox(height: 6),
+            Icon(icon, size: 20, color: const Color(0xFF8B2635)),
+            const SizedBox(height: 3),
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'serif',
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: isDark
-                    ? AppColors.inkSecondaryDark
-                    : AppColors.inkSecondaryLight,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF4A4036),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  /// Today's Entry presentation:
+  /// If written: renders with washi tape, paperclip, photo polaroid, and cassette player!
+  /// If not written: renders torn prompt card pinned with metallic PaperclipWidget.
+  Widget _buildTodayBinderSection(BuildContext context, dynamic todayEntry) {
+    if (todayEntry == null) {
+      // Unwritten today page with silver paperclip clasping the prompt note
+      return TornPaperCard(
+        pinnedWithPaperclip: true,
+        backgroundColor: const Color(0xFFFFFDF8),
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: const [
+                Text('🖋️', style: TextStyle(fontSize: 22)),
+                SizedBox(width: 8),
+                Text(
+                  'TODAY\'S CLEAN PAGE',
+                  style: TextStyle(
+                    fontFamily: 'serif',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.5,
+                    color: Color(0xFF2C2621),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'How was your day? Record your thoughts, quiet observations, and memories before the night falls.',
+              style: TextStyle(
+                fontFamily: 'serif',
+                fontSize: 13,
+                height: 1.5,
+                color: Color(0xFF5E544A),
+              ),
+            ),
+            const SizedBox(height: 14),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2C2621),
+                foregroundColor: const Color(0xFFFAF7EE),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              onPressed: () => context.push('/editor'),
+              icon: const Icon(Icons.edit_outlined, size: 16),
+              label: const Text(
+                'Pick up the pen & write',
+                style: TextStyle(
+                  fontFamily: 'serif',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Today's completed entry inside binder
+    final entry = todayEntry.entry;
+    final photos = todayEntry.photoAttachments;
+    final audio = todayEntry.audioAttachments;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFDF8),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFDED6C4)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(20),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with washi tape & mood
+          Row(
+            children: [
+              const WashiTape(
+                width: 55,
+                height: 14,
+                rotationDegrees: -3,
+                color: AppColors.washiTapeRose,
+              ),
+              const Spacer(),
+              MoodBadge(mood: todayEntry.mood, intensity: entry.moodIntensity),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Title
+          if (entry.title.isNotEmpty) ...[
+            Text(
+              entry.title,
+              style: const TextStyle(
+                fontFamily: 'serif',
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                color: Color(0xFF2C2621),
+              ),
+            ),
+            const SizedBox(height: 6),
+          ],
+
+          // Content snippet
+          Text(
+            entry.content,
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontFamily: 'serif',
+              fontSize: 13.5,
+              height: 1.55,
+              color: Color(0xFF3C352D),
+            ),
+          ),
+
+          // Taped Polaroid Photo if present
+          if (photos.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Center(
+              child: PolaroidCard(
+                imagePath: photos.first.uri,
+                caption: photos.first.caption,
+                pinnedWithPaperclip: true,
+                width: 170,
+              ),
+            ),
+          ],
+
+          // Retro Audio Cassette Tape if voice memo present
+          if (audio.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            CassetteTapeWidget(
+              audioPath: audio.first.uri,
+              label: 'TODAY\'S VOICE MEMO',
+            ),
+          ],
+
+          const SizedBox(height: 12),
+          const Divider(color: Color(0xFFE5DDD0)),
+
+          // Actions: Read in Book & Edit
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TextButton.icon(
+                icon: const Icon(Icons.auto_stories_outlined, size: 16),
+                label: const Text('Read in Book'),
+                onPressed: () => context.push('/book-reader?id=${entry.id}'),
+              ),
+              TextButton.icon(
+                icon: const Icon(Icons.edit_outlined, size: 16),
+                label: const Text('Edit Page'),
+                onPressed: () => context.push('/editor?id=${entry.id}'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Streak counter with authentic distressed vintage rubber stamp seal (Image 2)
+  Widget _buildStreakAndSealSection(dynamic stats) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9F5EA),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE2DACB)),
+      ),
+      child: Row(
+        children: [
+          // Circular Distressed Rubber Stamp Seal
+          const VintageRubberStamp(
+            size: 60,
+            text: 'CHRONICLE ARCHIVE • BESPOKE QUALITY',
+            centerText: 'ACTIVE',
+            color: Color(0xFF8B2635),
+            rotationDegrees: -8,
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${stats.currentStreak} Day Writing Streak',
+                  style: const TextStyle(
+                    fontFamily: 'serif',
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2C2621),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  stats.longestStreak > 0
+                      ? 'Best streak: ${stats.longestStreak} days preserved'
+                      : 'Every day recorded keeps the archive alive.',
+                  style: const TextStyle(
+                    fontFamily: 'serif',
+                    fontSize: 11,
+                    color: Color(0xFF7A6F62),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Keepsakes & Memories Section ("On This Day")
+  Widget _buildMemoriesSection(BuildContext context, List<dynamic> memories) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Keepsakes & Memories',
+              style: TextStyle(
+                fontFamily: 'serif',
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2C2621),
+              ),
+            ),
+            TextButton(
+              onPressed: () => context.push('/memories'),
+              child: const Text('View All'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        SizedBox(
+          height: 180,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: memories.length,
+            itemBuilder: (context, index) {
+              final memory = memories[index];
+              final item = memory.entry;
+              return Container(
+                width: 200,
+                margin: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFDF8),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFDED6C4)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(20),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: InkWell(
+                  onTap: () => context.push('/entry/${item.entry.id}'),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const WashiTape(
+                            width: 40,
+                            height: 12,
+                            color: AppColors.washiTapeSage,
+                          ),
+                          Text(
+                            memory.timeAgoDescription,
+                            style: const TextStyle(
+                              fontFamily: 'serif',
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFC5A059),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        item.entry.title.isEmpty
+                            ? 'Untitled Moment'
+                            : item.entry.title,
+                        style: const TextStyle(
+                          fontFamily: 'serif',
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2C2621),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Expanded(
+                        child: Text(
+                          item.entry.content,
+                          style: const TextStyle(
+                            fontFamily: 'serif',
+                            fontSize: 11,
+                            height: 1.4,
+                            color: Color(0xFF6E655F),
+                          ),
+                          maxLines: 4,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Recent Pages Section in the Binder
+  Widget _buildRecentPagesSection(
+    BuildContext context,
+    List<dynamic> recentEntries,
+  ) {
+    if (recentEntries.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Text(
+            'Your binder is empty.\nTap + below to start your personal archive.',
+            style: const TextStyle(
+              fontFamily: 'serif',
+              fontSize: 13,
+              color: Color(0xFF8B8279),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Recent Binder Pages',
+          style: TextStyle(
+            fontFamily: 'serif',
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C2621),
+          ),
+        ),
+        const SizedBox(height: 8),
+        ...recentEntries.take(5).map((entryDetails) {
+          final entry = entryDetails.entry;
+          final photos = entryDetails.photoAttachments;
+          final audio = entryDetails.audioAttachments;
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFFDF8),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFDED6C4)),
+            ),
+            child: InkWell(
+              onTap: () => context.push('/entry/${entry.id}'),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        DateFormat('MMMM d, yyyy').format(entry.entryDate),
+                        style: const TextStyle(
+                          fontFamily: 'serif',
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF7A6F62),
+                        ),
+                      ),
+                      MoodBadge(
+                        mood: entryDetails.mood,
+                        intensity: entry.moodIntensity,
+                        showLabel: false,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  if (entry.title.isNotEmpty) ...[
+                    Text(
+                      entry.title,
+                      style: const TextStyle(
+                        fontFamily: 'serif',
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2C2621),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                  ],
+                  Text(
+                    entry.content,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontFamily: 'serif',
+                      fontSize: 12.5,
+                      color: Color(0xFF5E544A),
+                      height: 1.45,
+                    ),
+                  ),
+                  if (photos.isNotEmpty || audio.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        if (photos.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.photo_camera_outlined,
+                                  size: 14,
+                                  color: Color(0xFF8B8279),
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  '${photos.length}',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontFamily: 'serif',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (audio.isNotEmpty)
+                          Row(
+                            children: const [
+                              Icon(
+                                Icons.audiotrack_outlined,
+                                size: 14,
+                                color: Color(0xFF8B8279),
+                              ),
+                              SizedBox(width: 3),
+                              Text(
+                                'Audio Memo',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontFamily: 'serif',
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  /// The Postcard Rack view (reproducing Image 1 across recent entries)
+  Widget _buildPostcardRackView(
+    BuildContext context, {
+    required List<dynamic> recentEntries,
+  }) {
+    if (recentEntries.isEmpty) {
+      return const Center(
+        child: Text(
+          'No postcards in the rack yet.\nWrite a journal entry with a photo to create one!',
+          style: TextStyle(
+            fontFamily: 'serif',
+            fontSize: 14,
+            color: Color(0xFFFAF7EE),
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      itemCount: recentEntries.length,
+      itemBuilder: (context, index) {
+        final item = recentEntries[index];
+        final entry = item.entry;
+        final photoPath = item.photoAttachments.isNotEmpty
+            ? item.photoAttachments.first.uri
+            : null;
+
+        return VintagePostcardWidget(
+          imagePath: photoPath,
+          message: entry.content,
+          date: entry.entryDate,
+          location: entry.locationName ?? 'CHRONICLE POST',
+          recipient: 'To: Dear Future Self',
+          onTap: () => context.push('/entry/${entry.id}'),
+        );
+      },
     );
   }
 }

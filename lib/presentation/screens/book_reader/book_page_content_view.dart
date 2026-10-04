@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/audio_player_widget.dart';
 import '../../../core/widgets/book_margin_doodles.dart';
+import '../../../core/widgets/cassette_tape_widget.dart';
 import '../../../core/widgets/mood_badge.dart';
 import '../../../core/widgets/polaroid_card.dart';
 import '../../../core/widgets/postal_stamp.dart';
+import '../../../core/widgets/vintage_rubber_stamp.dart';
 import '../../../core/widgets/washi_tape.dart';
 import 'book_page_data.dart';
 
@@ -77,19 +78,11 @@ class BookPageContentView extends StatelessWidget {
                     const SizedBox(height: 14),
                   ],
 
-                  // Audio Recording Player
+                  // Audio Recording Player (Image 2 Retro Cassette Tape)
                   if (page.audioPath != null) ...[
-                    Container(
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withAlpha(180),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: AppColors.paperCardBorderLight,
-                        ),
-                      ),
-                      padding: const EdgeInsets.all(8),
-                      child: AudioPlayerWidget(audioPath: page.audioPath!),
+                    CassetteTapeWidget(
+                      audioPath: page.audioPath!,
+                      label: 'VOICE MEMO • SIDE A',
                     ),
                     const SizedBox(height: 12),
                   ],
@@ -393,21 +386,48 @@ class BookPageContentView extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              '— Recorded in Chronicle',
-              style: TextStyle(
-                fontFamily: 'serif',
-                fontSize: 12,
-                fontStyle: FontStyle.italic,
-                color: Color(0xFF7A6D60),
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '— Recorded in Chronicle',
+                  style: TextStyle(
+                    fontFamily: 'serif',
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                    color: Color(0xFF7A6D60),
+                  ),
+                ),
+                if (page.isFavorite) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: const [
+                      Icon(
+                        Icons.star_rounded,
+                        color: AppColors.vintageGold,
+                        size: 18,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        'Starred Memory',
+                        style: TextStyle(
+                          fontFamily: 'serif',
+                          fontSize: 11,
+                          color: AppColors.vintageGold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
             ),
-            if (page.isFavorite)
-              const Icon(
-                Icons.star_rounded,
-                color: AppColors.vintageGold,
-                size: 20,
-              ),
+            // Distressed vintage rubber stamp seal
+            const VintageRubberStamp(
+              size: 64,
+              text: 'CHRONICLE ARCHIVE • BESPOKE QUALITY',
+              centerText: 'VERIFIED',
+              rotationDegrees: -8,
+            ),
           ],
         ),
       ],

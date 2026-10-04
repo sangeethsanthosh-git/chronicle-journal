@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import 'paperclip_widget.dart';
+import 'washi_tape.dart';
 
 class TornPaperCard extends StatelessWidget {
   final Widget child;
   final Color? backgroundColor;
   final EdgeInsetsGeometry padding;
+  final bool pinnedWithPaperclip;
+  final bool showTape;
 
   const TornPaperCard({
     super.key,
     required this.child,
     this.backgroundColor,
     this.padding = const EdgeInsets.all(20),
+    this.pinnedWithPaperclip = false,
+    this.showTape = false,
   });
 
   @override
@@ -20,14 +26,31 @@ class TornPaperCard extends StatelessWidget {
         backgroundColor ??
         (isDark ? AppColors.paperCardDark : AppColors.paperCardLight);
 
-    return CustomPaint(
-      painter: _TornPaperPainter(
-        color: color,
-        borderColor: isDark
-            ? AppColors.paperCardBorderDark
-            : AppColors.paperCardBorderLight,
-      ),
-      child: Container(padding: padding, child: child),
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        CustomPaint(
+          painter: _TornPaperPainter(
+            color: color,
+            borderColor: isDark
+                ? AppColors.paperCardBorderDark
+                : AppColors.paperCardBorderLight,
+          ),
+          child: Container(padding: padding, child: child),
+        ),
+        if (pinnedWithPaperclip)
+          const Positioned(
+            top: -12,
+            right: 24,
+            child: PaperclipWidget(width: 16, height: 40, rotationDegrees: 6),
+          ),
+        if (showTape)
+          const Positioned(
+            top: -8,
+            left: 20,
+            child: WashiTape(width: 50, height: 14, rotationDegrees: -3),
+          ),
+      ],
     );
   }
 }

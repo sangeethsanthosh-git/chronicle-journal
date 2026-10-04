@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import 'paperclip_widget.dart';
 import 'washi_tape.dart';
 
 class PolaroidCard extends StatelessWidget {
@@ -8,6 +9,7 @@ class PolaroidCard extends StatelessWidget {
   final String? caption;
   final double width;
   final double rotationDegrees;
+  final bool pinnedWithPaperclip;
   final VoidCallback? onTap;
 
   const PolaroidCard({
@@ -16,6 +18,7 @@ class PolaroidCard extends StatelessWidget {
     this.caption,
     this.width = 160.0,
     this.rotationDegrees = 2.0,
+    this.pinnedWithPaperclip = false,
     this.onTap,
   });
 
@@ -106,16 +109,27 @@ class PolaroidCard extends StatelessWidget {
               ),
             ),
           ),
-          // Tape on top
-          Positioned(
-            top: -10,
-            child: WashiTape(
-              width: width * 0.45,
-              height: 18,
-              rotationDegrees: -rotationDegrees,
-              color: AppColors.washiTapeKraft,
+          // Tape or Paperclip on top
+          if (pinnedWithPaperclip)
+            Positioned(
+              top: -14,
+              left: width * 0.2,
+              child: const PaperclipWidget(
+                width: 16,
+                height: 42,
+                rotationDegrees: -5,
+              ),
+            )
+          else
+            Positioned(
+              top: -10,
+              child: WashiTape(
+                width: width * 0.45,
+                height: 18,
+                rotationDegrees: -rotationDegrees,
+                color: AppColors.washiTapeKraft,
+              ),
             ),
-          ),
         ],
       ),
     );
