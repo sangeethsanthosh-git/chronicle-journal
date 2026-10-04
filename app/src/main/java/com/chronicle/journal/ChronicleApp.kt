@@ -14,9 +14,11 @@ class ChronicleApp :
     lateinit var workerFactory: HiltWorkerFactory
 
     override val workManagerConfiguration: Configuration
-        get() =
-            Configuration
-                .Builder()
-                .setWorkerFactory(workerFactory)
-                .build()
+        get() {
+            val builder = Configuration.Builder()
+            if (::workerFactory.isInitialized) {
+                builder.setWorkerFactory(workerFactory)
+            }
+            return builder.build()
+        }
 }
