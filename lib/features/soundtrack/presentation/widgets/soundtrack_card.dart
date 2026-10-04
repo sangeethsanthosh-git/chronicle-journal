@@ -872,8 +872,8 @@ class SoundtrackCard extends StatelessWidget {
         return Image.network(
           uri,
           fit: BoxFit.cover,
-          errorBuilder:
-              (context, error, stackTrace) => _buildFallbackMusicIcon(),
+          errorBuilder: (context, error, stackTrace) =>
+              _buildFallbackMusicIcon(),
         );
       } else {
         final file = File(uri);
@@ -881,8 +881,8 @@ class SoundtrackCard extends StatelessWidget {
           return Image.file(
             file,
             fit: BoxFit.cover,
-            errorBuilder:
-                (context, error, stackTrace) => _buildFallbackMusicIcon(),
+            errorBuilder: (context, error, stackTrace) =>
+                _buildFallbackMusicIcon(),
           );
         }
       }
