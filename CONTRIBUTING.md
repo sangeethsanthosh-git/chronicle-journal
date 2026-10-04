@@ -1,34 +1,46 @@
 # Contributing to Chronicle
 
-Thank you for your interest in contributing to Chronicle! We welcome bug reports, design improvements, and pull requests.
+Thank you for your interest in contributing to Chronicle! We welcome bug reports, design suggestions, and pull requests.
 
-## Development Setup
+---
+
+## 🛠️ Development Setup
 
 1. **Prerequisites**:
-   - JDK 21 or JDK 17
-   - Android SDK (API 35, Build-tools 35.0.0+)
-   - Android Studio Ladybug / Meerkat or later
+   - Flutter SDK `^3.24.0` (Dart `^3.5.0`)
+   - Android SDK (API 34+, minSdk 24)
+   - Java Development Kit (JDK 17)
 
-2. **Clone and Build**:
+2. **Clone and Install**:
    ```bash
    git clone https://github.com/sangeethsanthosh-git/chronicle-journal.git
    cd chronicle-journal
-   ./gradlew assembleDebug
+   flutter pub get
    ```
 
-3. **Running Quality Checks**:
+3. **Code Generation (Drift Database)**:
    ```bash
-   ./gradlew ktlintCheck
-   ./gradlew detekt
-   ./gradlew lintDebug
-   ./gradlew testDebugUnitTest
+   dart run build_runner build --delete-conflicting-outputs
    ```
 
-## Architecture Guidelines
+4. **Running Quality Checks**:
+   ```bash
+   # Code formatting verification
+   dart format --output=none --set-exit-if-changed .
 
-- Follow clean architecture: `core`, `data`, `domain`, `presentation`.
-- UI is strictly Jetpack Compose with Material 3.
-- Persistence is offline-first via Room and DataStore.
-- Business logic resides in Domain UseCases and Repositories.
-- UI state is represented as immutable data classes observed via `StateFlow`.
-- Test new use cases, repositories, and ViewModels.
+   # Static analysis
+   flutter analyze
+
+   # Unit & widget tests
+   flutter test
+   ```
+
+---
+
+## 🏛️ Architecture & Code Guidelines
+
+- **Clean Architecture & Feature-First**: Code is partitioned into `core/`, `data/`, `domain/`, and `presentation/`.
+- **State Management**: Use **Riverpod** with `Notifier` / `AsyncNotifier`. Avoid mutable global state.
+- **Local-First & Drift Database**: All journal entries and attachments are stored in local SQLite via Drift. Large binary media files (images, audio) must be stored in application directories with their paths persisted in Drift.
+- **UI & CustomPainters**: Maintain the tactile paper journal and scrapbook aesthetic. Utilize the existing `CustomPainter` library for paper, tape, stamps, and torn card effects.
+- **Testing**: Ensure that all new models, use cases, and repositories include unit tests under `test/`.

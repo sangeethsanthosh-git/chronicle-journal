@@ -1,223 +1,165 @@
-# Chronicle — Artisanal Offline-First Android Journaling
+# 📖 Chronicle — Personal Scrapbook & Journal for Android
 
-> *“Every day is a page in the book of your life. Make it worth reading.”*
-
-**Chronicle** is a complete, production-grade Android journaling application crafted with Jetpack Compose and modern Android architecture. Inspired by the tactile intimacy of physical journals, scrapbooks, postal mail, polaroid film, washi tape, and vintage stationery, Chronicle blends nostalgic analog aesthetics with state-of-the-art mobile engineering.
-
-Chronicle is **strictly offline-first and private**: zero tracking, zero mandatory cloud accounts, and zero data leakage. Your memories, photographs, and voice memos remain entirely on your device.
+<p align="center">
+  <b>A tactile, offline-first personal journaling experience inspired by physical notebooks, scrapbooks, and archival typography.</b>
+</p>
 
 ---
 
-## ✨ Key Features & Experience
+## 🌟 Overview
 
-### 1. 🖋️ Rich Journal Editor & Auto-Save
-- **Tactile Paper Surfaces:** Write on Plain Parchment, Ruled Notebook Lines, Dot Grid, or Aged Vintage Paper.
-- **Draft Resilience:** Automatic background draft persistence saves your work continuously. If the app closes unexpectedly, your draft is immediately recovered on next launch.
-- **Contextual Metadata:** Add location geocoding, live ambient weather (temperature, condition summary, sky icon), entry date/time picker, and favorite star status.
-- **10 Expressive Moods with 5-Level Intensity:** Happy, Calm, Excited, Grateful, Neutral, Sad, Angry, Anxious, Tired, and Loved.
+**Chronicle** is a production-quality, local-first Android journaling application built with **Flutter & Dart**. Moving beyond sterile digital note apps, Chronicle captures the warmth, texture, and nostalgia of physical paper journals, scrapbooks, polaroids, and vintage postal mail.
 
-### 2. 📸 Multimodal Media Attachments
-- **Photographs & Polaroids:** Modern Android Photo Picker and Camera integration. Photos are rendered in classic polaroid frames, taped scrapbook snapshots, or editorial layouts.
-- **Voice Memos & Audio Player:** Built-in high-fidelity audio recorder (MPEG-4 / AAC) with a live timer, accompanied by an integrated playback bar with scrub position tracking.
-
-### 3. 🎨 7 Visual Journal Modes
-- **Classic:** Elegant typography with balanced margins, date postmarks, and subtle shadows.
-- **Scrapbook:** Layered paper clippings, washi tape strips at varied angles, and nostalgic stickers.
-- **Postcard:** Vintage postcard layout with stamped postage cancellation marks, dividers, and postal codes.
-- **Ring Binder:** Authentic open dual-page notebook with metallic center binder rings, torn paper notes, polaroid snapshots, and reminder ribbon.
-- **Sanctuary Panorama:** Panoramic editorial card featuring 3 curved triptych photo frames, location tag pill, action chips, and embedded mini-calendar widget.
-- **Minimal:** Clean, distraction-free typographic layout focused strictly on words.
-- **Photo Story:** Visual-first feed emphasizing photography with handwritten caption notes underneath.
-
-### 4. 🧭 Journal Timeline & Interactive Calendar
-- **Chronological Timeline:** Switch between Cards, Scrapbook, Postcards, Open Binder, Panorama, and Compact List views.
-- **Sorting & Filtering:** Sort by newest, oldest, or recently edited. Filter instantly by mood, tags, favorites, photos, or voice recordings.
-- **Calendar Browser:** Interactive month view highlighting days with entries and mood dots.
-
-### 5. 🔍 Debounced Search
-- Deep full-text query matching across titles, entry bodies, location names, and tags with debounced real-time Room queries.
-
-### 6. 🕰️ "On This Day" Memories
-- Time capsule engine looking back across past years (*"1 year ago today"*, *"3 years ago today"*), surfacing forgotten memories and nostalgic snapshots.
-
-### 7. 📚 Collections
-- Curate entries into thematic collections such as *Travel*, *Personal Growth*, *Ideas*, or *Family*, complete with custom cover images and entry cross-referencing.
-
-### 8. 📊 Visual Insights & Statistics
-- **Streak Tracker:** Calculates current consecutive writing streak and all-time record.
-- **Mood Spectrum:** Visual distribution breakdown of emotional patterns over time.
-- **Activity Charts:** Pure Jetpack Compose canvas bar charts showing monthly entry volume without heavy third-party graphing libraries.
-- **Metrics:** Lifetime entries, photos attached, audio minutes recorded, and word count totals.
-
-### 9. 🔒 App Lock & Privacy
-- Biometric authentication (fingerprint / face unlock) and SHA-256 hashed 4-digit PIN lock.
-- Configurable auto-lock delay.
-- Privacy-first: no telemetry, no tracking SDKs.
-
-### 10. 💾 Local Backup & Restore
-- **ZIP Archive Export:** Complete bundle containing all entry database records (JSON) alongside all referenced images and voice recordings.
-- **JSON Export / Import:** Structured format for easy programmatic data portability.
-- **Plaintext TXT Export:** Human-readable compilation of all journal entries.
-- **Integrity Validation:** Validates schema version and record consistency before restoring.
-
-### 11. ⏰ Gentle Daily Reminders
-- WorkManager periodic background worker with configurable reminder times and notification channels.
+Every visual element connects directly to local persistent SQLite storage powered by **Drift**. There are zero placeholder screens, mock buttons, or hardcoded entries.
 
 ---
 
-## 🏛️ Architecture & Tech Stack
+## 🎨 Visual Identity & Physical Aesthetic
 
-Chronicle follows **Modern Android Architecture (MVI / MVVM + Clean Architecture)** with strict separation of concerns:
+- **Paper Textures & Edge Treatments**: Ruled notebook lines, dot grids, warm sepia parchment, and torn/deckled paper edges rendered with hardware-accelerated `CustomPainter`.
+- **Washi Tape & Mounts**: Procedurally generated semi-translucent tape strips with serrated cuts and paper fibers in Kraft, Sage, Navy, Rose, and Ochre hues.
+- **Polaroid Photo Cards**: Realistic polaroid frames with soft drop shadows, hand-written captions, and tape mounts.
+- **Postal & Archival Stamps**: Vintage postal cancellation postmarks with circular date rings and wavy cancellation lines.
+- **Binder Rings**: Open ring-binder visual mode with metallic silver rings and paper holes.
+- **Handcrafted Doodles**: Whimsical vector stickers including sparkle stars, hearts, sunbursts, and laurel leaves.
+- **7 Distinct Layout Modes**:
+  1. *Classic Notebook*: Familiar lined pages with margin borders.
+  2. *Scrapbook Collage*: Staggered polaroids, washi tape, and deckled paper cards.
+  3. *Vintage Postcard*: Dual-column postcard layout with postal postmarks.
+  4. *Ring Binder*: Editorial notebook with metallic ring binding.
+  5. *Sanctuary Panorama*: Immersive hero photos and wide reading format.
+  6. *Minimal Archival*: Clean monochrome typography focused on words.
+  7. *Photo Diary*: Visual-first photo timeline with captions.
 
-```
-app/
- └── src/main/java/com/chronicle/journal/
-      ├── core/
-      │    ├── common/          # TimeUtils, extensions
-      │    ├── designsystem/    # Colors, Typography, Shapes, Themes, Paper, Tape, Badges
-      │    └── utils/           # AudioRecorder, AudioPlayer, Location, Weather, Security
-      ├── data/
-      │    ├── local/           # Room Database, DAOs, Entities, CrossRefs, Relations
-      │    ├── repository/      # Repository implementations & mapping logic
-      │    └── backup/          # BackupManager (ZIP, JSON, TXT export & restore)
-      ├── domain/
-      │    ├── model/           # Clean domain models (JournalEntry, Mood, Attachment, etc.)
-      │    ├── repository/      # Repository interfaces
-      │    └── usecase/         # Isolated business logic use cases (Streak, Stats, Memories, etc.)
-      ├── presentation/
-      │    ├── home/            # Home dashboard, daily prompt, quick actions
-      │    ├── journal/         # Timeline, entry cards, and detailed entry view
-      │    ├── editor/          # Journal writer, draft auto-save, media attachments
-      │    ├── calendar/        # Calendar screen with month grid and mood indicators
-      │    ├── search/          # Debounced search & multifaceted filters
-      │    ├── insights/        # Dynamic Compose charts and journaling stats
-      │    ├── memories/        # "On this day" nostalgia time capsules
-      │    ├── collections/     # Custom collections and category management
-      │    ├── settings/        # Theme, paper style, lock, reminders, backup/restore
-      │    ├── onboarding/      # First-launch scrapbook walkthrough
-      │    ├── lock/            # PIN keypad & biometric gate
-      │    └── navigation/      # Navigation host, bottom bar, and route arguments
-      ├── di/                   # Hilt Dependency Injection modules
-      └── reminder/             # WorkManager ReminderWorker & ReminderScheduler
-```
+---
 
-### Technology Highlights
-| Component | Technology |
+## 🛠️ Technology Stack
+
+| Layer | Technologies |
 |---|---|
-| **Language** | Kotlin 2.0.21 |
-| **UI Toolkit** | Jetpack Compose + Material 3 (BOM 2024.12.01) |
-| **Asynchronous** | Kotlin Coroutines & Reactive StateFlow |
-| **Dependency Injection** | Dagger Hilt 2.52 with KSP |
-| **Database** | Room 2.6.1 (SQLite) with relational entities & junctions |
-| **Preferences** | Jetpack DataStore Preferences |
-| **Image Loading** | Coil Compose 2.7.0 |
-| **Background Scheduling**| AndroidX WorkManager 2.10.0 + Hilt Worker |
-| **Biometrics** | AndroidX Biometric 1.2.0 |
-| **Testing** | JUnit 4, Coroutines Test, MockK, Turbine, Room In-Memory, Compose UI Test |
-| **Code Quality** | Android Lint, ktlint 12.1.2, detekt 1.23.7 |
-| **CI / CD** | GitHub Actions Automated Build, Lint, Test & APK Release Pipeline |
+| **Language & Framework** | **Dart 3.x** & **Flutter 3.x** (Android-first, multiplatform ready) |
+| **UI & Styling** | **Material 3**, `CustomPainter` vector shaders, Slivers, Hero animations |
+| **Architecture** | **Clean Architecture** (Feature-First) + MVVM + Repository Pattern |
+| **State Management** | **Riverpod** (`flutter_riverpod`) with `Notifier` & reactive Streams |
+| **Database** | **Drift** (SQLite), typed schema, foreign keys, migrations, reactive queries |
+| **Navigation** | **go_router** with `StatefulShellRoute` persistent bottom navigation |
+| **Audio** | `record` (voice note recording) & `audioplayers` (playback with waveforms) |
+| **Location & Weather**| `geolocator` & Open-Meteo REST API via `dio` (with offline fallback) |
+| **Security** | `flutter_secure_storage` + SHA-256 PIN hashing + Biometric auth |
+| **Export & Backup** | `pdf` & `printing` (editorial PDF exports), JSON backups, TXT exports |
+| **Code Quality** | `flutter_lints`, `dart format`, `flutter analyze`, `flutter test` |
+| **CI/CD** | **GitHub Actions** (`.github/workflows/ci-cd.yml`) + **Dependabot** |
 
 ---
 
-## 🛠️ Build & Installation
+## 📁 Project Architecture
+
+```
+lib/
+├── core/
+│   ├── theme/          # AppColors, AppTypography, AppTheme
+│   ├── utils/          # Location, Weather, Audio, Security, PDF, Backup, Notifications
+│   └── widgets/        # CustomPainters: PaperBackground, WashiTape, PolaroidCard, etc.
+├── data/
+│   ├── local/          # Drift AppDatabase (Tables, DAOs, schema generation)
+│   └── repositories/   # JournalRepositoryImpl, PreferencesRepositoryImpl
+├── domain/
+│   ├── models/         # Mood, PaperStyle, JournalLayout, JournalStatistics, etc.
+│   ├── repositories/   # Abstract JournalRepository & PreferencesRepository
+│   └── usecases/       # Streak calculation, statistics, memory retrieval
+└── presentation/
+    ├── providers/      # Riverpod providers (Database, Journal, Stats, Memories, etc.)
+    ├── router/         # go_router configuration & route guards
+    └── screens/        # Home, Timeline, Editor, Detail, Calendar, Search, Insights, etc.
+```
+
+---
+
+## 🔒 Security & Privacy
+
+- **100% Local-First**: No remote servers or cloud accounts required. All journal entries, audio recordings, and photos remain on the user's device.
+- **PIN Lock & Biometrics**: Optional 4-digit PIN stored securely via encrypted key storage.
+- **Safe Hardware Access**: Permissions for Microphone, Camera, Location, and Storage are requested contextually with graceful fallbacks.
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- JDK 17 (Java Development Kit)
-- Android SDK 35 (Installed via Android Studio or command-line tools)
-- Gradle 8.14 (Included via Gradle Wrapper `gradlew`)
 
-### Build Commands
+- Flutter SDK `^3.24.0` (Dart `^3.5.0`)
+- Android SDK (API 34+ recommended, minSdk 24)
+- Java Development Kit (JDK 17)
+
+### Local Setup
 
 ```bash
 # Clone the repository
 git clone https://github.com/sangeethsanthosh-git/chronicle-journal.git
 cd chronicle-journal
 
-# Run all unit tests (41 tests covering use cases, repositories, viewmodels, security, backup)
-./gradlew testDebugUnitTest
+# Install dependencies
+flutter pub get
 
-# Run Android Lint analysis
-./gradlew lintDebug
+# Generate Drift database files (if needed)
+dart run build_runner build --delete-conflicting-outputs
 
-# Run ktlint formatting check
-./gradlew ktlintCheck
+# Run code analysis
+flutter analyze
 
-# Run detekt static analysis
-./gradlew detekt
+# Run unit and widget tests
+flutter test
 
-# Build the Debug APK
-./gradlew assembleDebug
-
-# Build the Release APK (requires signing credentials)
-./gradlew assembleRelease
+# Run on an Android emulator or device
+flutter run
 ```
 
-Generated APKs will be located at:
-- `app/build/outputs/apk/debug/app-debug.apk`
-- `app/build/outputs/apk/release/app-release-unsigned.apk`
+---
+
+## 🔐 Android Release Signing Setup
+
+For continuous integration and production releases, release signing credentials must be configured securely.
+
+### GitHub Secrets Required
+
+Configure the following secrets in your GitHub repository (**Settings > Secrets and variables > Actions**):
+
+| Secret Name | Description |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` | Base64-encoded string of your `.keystore` / `.jks` file |
+| `ANDROID_KEYSTORE_PASSWORD`| Password for the release keystore |
+| `ANDROID_KEY_ALIAS` | Alias name for the signing key |
+| `ANDROID_KEY_PASSWORD` | Password for the key alias |
+
+### Generating a Release Keystore
+
+```bash
+keytool -genkey -v -keystore release.keystore -alias chronicle-release -keyalg RSA -keysize 2048 -validity 10000
+```
+
+To encode it for GitHub Secrets on Linux/macOS:
+```bash
+base64 -w 0 release.keystore
+```
+On Windows PowerShell:
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("release.keystore")) | Set-Clipboard
+```
+
+> **Note**: If release secrets are not configured, CI gracefully continues to test and build a debug APK.
 
 ---
 
-## 🧪 Automated Testing
+## 🤖 Continuous Integration & Automation
 
-Chronicle includes a comprehensive automated test suite:
-- **Unit Tests (`app/src/test/`):**
-  - `CalculateStreakUseCaseTest`: Verifies consecutive streaks, gaps, same-day multiple entries, and streak freezes.
-  - `GetStatisticsUseCaseTest`: Verifies lifetime totals, mood distributions, word counts, and monthly groupings.
-  - `GetMemoriesUseCaseTest`: Verifies exact-day anniversary matching and spotlight candidates.
-  - `GetEntriesUseCaseTest`: Verifies ordering (newest/oldest) and criteria filtering (favorites, moods, tags).
-  - `SaveEntryUseCaseTest`: Verifies entity creation and persistence.
-  - `DeleteEntryUseCaseTest`: Verifies soft delete propagation.
-  - `SearchEntriesUseCaseTest`: Verifies text search and filter constraints.
-  - `SecurityUtilsTest`: Verifies SHA-256 PIN hashing consistency and verification.
-  - `BackupValidationTest`: Verifies JSON backup parsing, schema versioning, and corrupt file detection.
-  - `JournalRepositoryImplTest`: Verifies Room DAO mapping to domain objects and transactional consistency.
-  - `HomeViewModelTest`: Verifies state flow emissions for greetings, streaks, memories, and today's entry.
-  - `JournalTimelineViewModelTest`: Verifies timeline view switching and sort/filter states.
-  - `SearchViewModelTest`: Verifies 300ms query debouncing and filter updates.
-- **Instrumented Tests (`app/src/androidTest/`):**
-  - `JournalEntryDaoTest`: In-memory Room database tests for queries, tags, attachments, soft-deletes, and full-text search.
-  - `HomeScreenComposeTest`: Compose UI node verification for typography, headers, and empty states.
-
----
-
-## 🚀 Continuous Integration & Deployment (CI/CD)
-
-The project includes an enterprise-ready GitHub Actions workflow (`.github/workflows/ci-cd.yml`):
-1. **Quality Gate:** Executes `ktlintCheck`, `detekt`, and `lintDebug`.
-2. **Test Suite:** Executes all JVM unit tests and generates test reports.
-3. **Build Artifacts:** Compiles debug and release APKs, uploading them as workflow artifacts.
-4. **Release Publishing:** When a Git tag matching `v*` is pushed, a GitHub Release is created automatically with the signed APK attached.
-
----
-
-## 🔒 Privacy & Permissions
-
-Chronicle requires minimal, optional permissions that serve user-initiated features only:
-- `CAMERA`: Used strictly when capturing a photo directly inside the journal editor.
-- `RECORD_AUDIO`: Used strictly when recording a voice memo inside the journal editor.
-- `ACCESS_COARSE_LOCATION` & `ACCESS_FINE_LOCATION`: Used optionally when the user requests tagging their current location on an entry.
-- `POST_NOTIFICATIONS`: Used on Android 13+ (API 33+) to dispatch user-scheduled daily journaling reminders.
-- `INTERNET`: Used optionally to fetch current weather conditions from Open-Meteo when location is enabled. If offline, the app defaults smoothly with zero degradation.
-
-**Zero Data Collection:** Chronicle contains no tracking libraries, no third-party advertisements, and no analytics SDKs.
+- **GitHub Actions (`.github/workflows/ci-cd.yml`)**:
+  - Pull Requests & Commits to `main`: Runs `dart format`, `flutter analyze`, `flutter test`, and builds the debug APK.
+  - Tag Releases (`v*`): Compiles production Android App Bundle (AAB) & Release APK, creating an automated GitHub Release with attached binaries.
+- **Dependabot (`.github/dependabot.yml`)**:
+  - Automated weekly audits for GitHub Actions and Dart `pub` packages.
 
 ---
 
 ## 📄 License
 
-```
-Copyright 2026 Chronicle Journal Contributors
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-```
+This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
