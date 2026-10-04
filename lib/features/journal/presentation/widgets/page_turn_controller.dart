@@ -84,8 +84,11 @@ class PageTurnController extends ChangeNotifier {
   /// Completes drag gesture when user releases finger.
   /// If progress > threshold or flick velocity is high, finishes page turn.
   /// Otherwise, springs back to starting position.
+  /// Completes drag gesture when user releases finger.
+  /// If progress > threshold or flick velocity is high, finishes page turn.
+  /// Otherwise, springs back to starting position.
   Future<void> completeDrag({double velocity = 0.0}) async {
-    if (!_isDragging && !_isAnimating) return;
+    if (!_isDragging) return;
     _isDragging = false;
 
     final threshold = 0.38;
@@ -95,21 +98,26 @@ class PageTurnController extends ChangeNotifier {
         ? (_dragProgress > threshold || velocity < -velocityThreshold)
         : (_dragProgress > threshold || velocity > velocityThreshold);
 
-    if (shouldTurn) {
-      await _animateProgressTo(1.0);
-      if (_isTurningForward) {
-        _currentSpreadIndex = math.min(
-          _totalSpreads - 1,
-          _currentSpreadIndex + 1,
-        );
+    try {
+      if (shouldTurn) {
+        await _animateProgressTo(1.0);
+        if (_isTurningForward) {
+          _currentSpreadIndex = math.min(
+            _totalSpreads - 1,
+            _currentSpreadIndex + 1,
+          );
+        } else {
+          _currentSpreadIndex = math.max(0, _currentSpreadIndex - 1);
+        }
       } else {
-        _currentSpreadIndex = math.max(0, _currentSpreadIndex - 1);
+        await _animateProgressTo(0.0);
       }
+    } catch (_) {
+      // Ignore animation cancellation
+    } finally {
       _dragProgress = 0.0;
-      notifyListeners();
-    } else {
-      await _animateProgressTo(0.0);
-      _dragProgress = 0.0;
+      _isDragging = false;
+      _isAnimating = false;
       notifyListeners();
     }
   }
@@ -118,9 +126,16 @@ class PageTurnController extends ChangeNotifier {
   Future<void> cancelDrag() async {
     if (!_isDragging) return;
     _isDragging = false;
-    await _animateProgressTo(0.0);
-    _dragProgress = 0.0;
-    notifyListeners();
+    try {
+      await _animateProgressTo(0.0);
+    } catch (_) {
+      // Ignore cancellation
+    } finally {
+      _dragProgress = 0.0;
+      _isDragging = false;
+      _isAnimating = false;
+      notifyListeners();
+    }
   }
 
   /// Programmatic turn to next page with natural paper timing.
@@ -133,11 +148,17 @@ class PageTurnController extends ChangeNotifier {
     _isAnimating = true;
     notifyListeners();
 
-    await _animateProgressTo(1.0, duration: duration);
-    _currentSpreadIndex = math.min(_totalSpreads - 1, _currentSpreadIndex + 1);
-    _dragProgress = 0.0;
-    _isAnimating = false;
-    notifyListeners();
+    try {
+      await _animateProgressTo(1.0, duration: duration);
+      _currentSpreadIndex = math.min(_totalSpreads - 1, _currentSpreadIndex + 1);
+    } catch (_) {
+      // Ignore cancellation
+    } finally {
+      _dragProgress = 0.0;
+      _isAnimating = false;
+      _isDragging = false;
+      notifyListeners();
+    }
   }
 
   /// Programmatic turn to previous page with natural paper timing.
@@ -150,11 +171,17 @@ class PageTurnController extends ChangeNotifier {
     _isAnimating = true;
     notifyListeners();
 
-    await _animateProgressTo(1.0, duration: duration);
-    _currentSpreadIndex = math.max(0, _currentSpreadIndex - 1);
-    _dragProgress = 0.0;
-    _isAnimating = false;
-    notifyListeners();
+    try {
+      await _animateProgressTo(1.0, duration: duration);
+      _currentSpreadIndex = math.max(0, _currentSpreadIndex - 1);
+    } catch (_) {
+      // Ignore cancellation
+    } finally {
+      _dragProgress = 0.0;
+      _isAnimating = false;
+      _isDragging = false;
+      notifyListeners();
+    }
   }
 
   /// Jumps directly to a given spread index without animation.
@@ -178,6 +205,7 @@ class PageTurnController extends ChangeNotifier {
     final start = _dragProgress;
     final animDuration = duration ?? const Duration(milliseconds: 420);
 
+    _animController!.stop();
     _animController!.duration = animDuration;
     _animController!.reset();
 
@@ -194,6 +222,8 @@ class PageTurnController extends ChangeNotifier {
 
     try {
       await _animController!.forward();
+    } catch (_) {
+      // Safely ignore TickerCanceled or animation cancellation
     } finally {
       animation.removeListener(listener);
       _isAnimating = false;

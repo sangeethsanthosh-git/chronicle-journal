@@ -69,8 +69,11 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   StreamSubscription? _recordingSub;
 
   Timer? _autoSaveDebounce;
-  String _saveStatus = 'Draft saved';
+  final ValueNotifier<String> _saveStatusNotifier =
+      ValueNotifier<String>('Draft saved');
   bool _isLoading = true;
+  bool _isSaving = false;
+  SharedPreferences? _prefs;
 
   @override
   void initState() {
@@ -90,6 +93,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     final prefs = ref.read(preferencesProvider);
     _paperStyle = prefs.defaultPaperStyle;
     _layout = prefs.defaultLayout;
+    _prefs = await SharedPreferences.getInstance();
 
     if (widget.entryId != null) {
       // Load existing entry
@@ -129,18 +133,14 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       }
     } else {
       // Restore draft if exists
-      final sp = await SharedPreferences.getInstance();
-      final draftTitle = sp.getString('draft_title');
-      final draftContent = sp.getString('draft_content');
+      final draftTitle = _prefs?.getString('draft_title');
+      final draftContent = _prefs?.getString('draft_content');
       if (draftTitle != null && draftTitle.isNotEmpty) {
         _titleController.text = draftTitle;
       }
       if (draftContent != null && draftContent.isNotEmpty) {
         _contentController.text = draftContent;
       }
-
-      // Automatically fetch location & ambient weather if creating new
-      _fetchLocationAndWeather();
     }
 
     if (mounted) {
@@ -150,18 +150,15 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
 
   void _onTextChanged() {
     _autoSaveDebounce?.cancel();
-    setState(() => _saveStatus = 'Saving...');
-    _autoSaveDebounce = Timer(const Duration(milliseconds: 800), () async {
-      if (widget.entryId == null) {
-        final sp = await SharedPreferences.getInstance();
-        await sp.setString('draft_title', _titleController.text);
-        await sp.setString('draft_content', _contentController.text);
+    _saveStatusNotifier.value = 'Saving...';
+    _autoSaveDebounce = Timer(const Duration(milliseconds: 1000), () async {
+      if (widget.entryId == null && _prefs != null) {
+        await _prefs?.setString('draft_title', _titleController.text);
+        await _prefs?.setString('draft_content', _contentController.text);
       }
       if (mounted) {
-        setState(
-          () => _saveStatus =
-              'Last saved at ${DateFormat.jm().format(DateTime.now())}',
-        );
+        _saveStatusNotifier.value =
+            'Last saved at ${DateFormat.jm().format(DateTime.now())}';
       }
     });
   }
@@ -327,49 +324,70 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   }
 
   Future<void> _saveEntry() async {
+    if (_isSaving) return;
     final content = _contentController.text.trim();
-    if (content.isEmpty &&
-        _titleController.text.trim().isEmpty &&
-        _photoPaths.isEmpty) {
+    final title = _titleController.text.trim();
+    if (content.isEmpty && title.isEmpty && _photoPaths.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Cannot save an empty journal entry.')),
       );
       return;
     }
 
-    final repo = ref.read(journalRepositoryProvider);
-    await repo.saveEntry(
-      id: _id,
-      title: _titleController.text.trim(),
-      content: content,
-      entryDate: _entryDate,
-      mood: _selectedMood.type.name,
-      moodIntensity: _moodIntensity,
-      isFavorite: _isFavorite,
-      locationName: _locationName,
-      latitude: _latitude,
-      longitude: _longitude,
-      weatherSummary: _weatherSummary,
-      weatherTemperature: _weatherTemperature,
-      coverImageUri: _photoPaths.isNotEmpty ? _photoPaths.first : null,
-      layout: _layout.name,
-      paperStyle: _paperStyle.name,
-      tagIds: _selectedTagIds,
-      photoPaths: _photoPaths,
-      audioPaths: _audioPaths,
-      soundtrack: _attachedSoundtrack,
-    );
+    setState(() => _isSaving = true);
+    _saveStatusNotifier.value = 'Saving...';
 
-    // Clear draft
-    if (widget.entryId == null) {
-      final sp = await SharedPreferences.getInstance();
-      await sp.remove('draft_title');
-      await sp.remove('draft_content');
-    }
+    try {
+      final repo = ref.read(journalRepositoryProvider);
+      await repo.saveEntry(
+        id: _id,
+        title: title,
+        content: content,
+        entryDate: _entryDate,
+        mood: _selectedMood.type.name,
+        moodIntensity: _moodIntensity,
+        isFavorite: _isFavorite,
+        locationName: _locationName,
+        latitude: _latitude,
+        longitude: _longitude,
+        weatherSummary: _weatherSummary,
+        weatherTemperature: _weatherTemperature,
+        coverImageUri: _photoPaths.isNotEmpty ? _photoPaths.first : null,
+        layout: _layout.name,
+        paperStyle: _paperStyle.name,
+        tagIds: _selectedTagIds,
+        photoPaths: _photoPaths,
+        audioPaths: _audioPaths,
+        soundtrack: _attachedSoundtrack,
+      );
 
-    if (mounted) {
-      // Open the journal entry directly into Book Reading mode with 3D page flip animation
-      context.pushReplacement('/book-reader?id=$_id');
+      // Clear draft
+      if (widget.entryId == null && _prefs != null) {
+        await _prefs?.remove('draft_title');
+        await _prefs?.remove('draft_content');
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✨ Journal entry saved!'),
+            duration: Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/home');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving entry: $e')),
+        );
+      }
     }
   }
 
@@ -408,10 +426,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       soundtrack: _attachedSoundtrack,
     );
 
-    if (widget.entryId == null) {
-      final sp = await SharedPreferences.getInstance();
-      await sp.remove('draft_title');
-      await sp.remove('draft_content');
+    if (widget.entryId == null && _prefs != null) {
+      await _prefs?.remove('draft_title');
+      await _prefs?.remove('draft_content');
     }
 
     if (mounted) {
@@ -504,10 +521,13 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   @override
   void dispose() {
     _autoSaveDebounce?.cancel();
+    _titleController.removeListener(_onTextChanged);
+    _contentController.removeListener(_onTextChanged);
     _titleController.dispose();
     _contentController.dispose();
     _recordingSub?.cancel();
     _audioRecorder.dispose();
+    _saveStatusNotifier.dispose();
     super.dispose();
   }
 
@@ -550,11 +570,20 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               onPressed: () => setState(() => _isFavorite = !_isFavorite),
             ),
             TextButton(
-              onPressed: _saveEntry,
-              child: const Text(
-                'Save',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
+              onPressed: _isSaving ? null : _saveEntry,
+              child: _isSaving
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text(
+                      'Save',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
             ),
           ],
         ),
@@ -566,14 +595,17 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               color: (isDark ? Colors.black : Colors.white).withAlpha(40),
               child: Row(
                 children: [
-                  Text(
-                    _saveStatus,
-                    style: TextStyle(
-                      fontFamily: 'serif',
-                      fontSize: 11,
-                      color: isDark
-                          ? AppColors.inkMutedDark
-                          : AppColors.inkMutedLight,
+                  ValueListenableBuilder<String>(
+                    valueListenable: _saveStatusNotifier,
+                    builder: (context, status, _) => Text(
+                      status,
+                      style: TextStyle(
+                        fontFamily: 'serif',
+                        fontSize: 11,
+                        color: isDark
+                            ? AppColors.inkMutedDark
+                            : AppColors.inkMutedLight,
+                      ),
                     ),
                   ),
                   const Spacer(),
