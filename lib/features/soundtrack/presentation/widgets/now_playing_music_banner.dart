@@ -74,6 +74,14 @@ class _NowPlayingMusicBannerState extends ConsumerState<NowPlayingMusicBanner>
     final track = trackAsync.value;
 
     if (track == null || (track.title == null && track.artist == null)) {
+      final permAsync = ref.watch(musicPermissionProvider);
+      final hasPermission = permAsync.value ?? true;
+
+      // If Android notification permission is not active yet, show an inviting prompt
+      if (!hasPermission) {
+        return _buildPermissionBanner(context);
+      }
+
       if (!widget.showHintWhenIdle) {
         return const SizedBox.shrink();
       }
@@ -96,6 +104,93 @@ class _NowPlayingMusicBannerState extends ConsumerState<NowPlayingMusicBanner>
     }
 
     return _buildExpandedBanner(context, track);
+  }
+
+  Widget _buildPermissionBanner(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF241D17).withAlpha(230),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: const Color(0xFFC5A059).withAlpha(120),
+          width: 1.2,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x33000000),
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              color: const Color(0xFFC5A059).withAlpha(40),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.music_note_rounded,
+              size: 20,
+              color: Color(0xFFE8D09B),
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Soundtrack Memory Integration',
+                  style: TextStyle(
+                    fontFamily: 'serif',
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFFAF7EE),
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Tap to allow detecting music playing on your phone',
+                  style: TextStyle(
+                    fontFamily: 'serif',
+                    fontSize: 10.5,
+                    color: Color(0xFFDED6C4),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFC5A059),
+              foregroundColor: const Color(0xFF1E1813),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () => ref.read(musicServiceProvider).requestPermission(),
+            child: const Text(
+              'Connect',
+              style: TextStyle(
+                fontFamily: 'serif',
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildIdleMusicHint(BuildContext context) {
@@ -160,7 +255,9 @@ class _NowPlayingMusicBannerState extends ConsumerState<NowPlayingMusicBanner>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildSpinningVinylDisc(track, size: 22),
+            _buildAlbumArtCover(track, size: 22),
+            const SizedBox(width: 6),
+            _buildSpinningVinylDisc(track, size: 20),
             const SizedBox(width: 8),
             _buildEqualizerBars(height: 12),
             const SizedBox(width: 8),
@@ -295,13 +392,34 @@ class _NowPlayingMusicBannerState extends ConsumerState<NowPlayingMusicBanner>
 
           const SizedBox(height: 10),
 
-          // Core content row: Spinning vinyl disc + track info + action button
+          // Core content row: Album Cover Photo + Spinning Vinyl Disc + track info + action button
           Row(
             children: [
-              // Spinning Vinyl Disc
-              _buildSpinningVinylDisc(track, size: 48),
+              // Photo Banner: Album Art Jacket + Spinning Vinyl Record slipping out
+              SizedBox(
+                width: 72,
+                height: 52,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.centerLeft,
+                  children: [
+                    // Spinning vinyl disc slipping out to the right
+                    Positioned(
+                      left: 20,
+                      top: 2,
+                      child: _buildSpinningVinylDisc(track, size: 48),
+                    ),
+                    // Album Cover Photo Jacket
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      child: _buildAlbumArtCover(track, size: 52),
+                    ),
+                  ],
+                ),
+              ),
 
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
 
               // Title and artist
               Expanded(
@@ -469,15 +587,9 @@ class _NowPlayingMusicBannerState extends ConsumerState<NowPlayingMusicBanner>
                 ),
 
                 // Center Label or Artwork
-                if (track.artworkUri != null &&
-                    File(track.artworkUri!).existsSync())
+                if (track.artworkUri != null && track.artworkUri!.isNotEmpty)
                   ClipOval(
-                    child: Image.file(
-                      File(track.artworkUri!),
-                      width: size * 0.45,
-                      height: size * 0.45,
-                      fit: BoxFit.cover,
-                    ),
+                    child: _buildCenterLabelArt(track.artworkUri!, size * 0.45),
                   )
                 else
                   Container(
@@ -511,6 +623,100 @@ class _NowPlayingMusicBannerState extends ConsumerState<NowPlayingMusicBanner>
         );
       },
     );
+  }
+
+  Widget _buildAlbumArtCover(NowPlaying track, {required double size}) {
+    final uri = track.artworkUri;
+    Widget artWidget;
+
+    if (uri != null && uri.isNotEmpty) {
+      if (uri.startsWith('http://') || uri.startsWith('https://')) {
+        artWidget = Image.network(
+          uri,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => _buildFallbackArt(size),
+        );
+      } else {
+        final file = File(uri);
+        if (file.existsSync()) {
+          artWidget = Image.file(
+            file,
+            width: size,
+            height: size,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => _buildFallbackArt(size),
+          );
+        } else {
+          artWidget = _buildFallbackArt(size);
+        }
+      }
+    } else {
+      artWidget = _buildFallbackArt(size);
+    }
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1712),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: const Color(0xFFC5A059).withAlpha(160),
+          width: 1.2,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6.8),
+        child: artWidget,
+      ),
+    );
+  }
+
+  Widget _buildFallbackArt(double size) {
+    return Container(
+      width: size,
+      height: size,
+      color: const Color(0xFF2C221A),
+      child: Center(
+        child: Icon(
+          Icons.album_rounded,
+          size: size * 0.55,
+          color: const Color(0xFFC5A059),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCenterLabelArt(String uri, double s) {
+    if (uri.startsWith('http://') || uri.startsWith('https://')) {
+      return Image.network(
+        uri,
+        width: s,
+        height: s,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Container(color: const Color(0xFF8B2635)),
+      );
+    }
+    final f = File(uri);
+    if (f.existsSync()) {
+      return Image.file(
+        f,
+        width: s,
+        height: s,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Container(color: const Color(0xFF8B2635)),
+      );
+    }
+    return Container(color: const Color(0xFF8B2635));
   }
 
   Widget _buildEqualizerBars({required double height}) {

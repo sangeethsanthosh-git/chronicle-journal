@@ -178,7 +178,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final activeQuote = _deskQuotes[_quoteIndex];
 
     return Scaffold(
-      backgroundColor: deskTheme.deskColor,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

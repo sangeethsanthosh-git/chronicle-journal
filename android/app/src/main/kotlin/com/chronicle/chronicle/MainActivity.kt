@@ -146,13 +146,17 @@ class MainActivity : FlutterActivity() {
         var artist: String? = metadata?.getString(MediaMetadata.METADATA_KEY_ARTIST)
         val album: String? = metadata?.getString(MediaMetadata.METADATA_KEY_ALBUM)
 
+        val description = metadata?.description
+
         // Fallbacks for title and artist if missing or in alternative metadata keys
         if (title.isNullOrEmpty()) {
             title = metadata?.getString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE)
+                ?: description?.title?.toString()
         }
         if (artist.isNullOrEmpty()) {
             artist = metadata?.getString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST)
                 ?: metadata?.getString(MediaMetadata.METADATA_KEY_AUTHOR)
+                ?: description?.subtitle?.toString()
         }
 
         // If no title is available and not playing, return null
@@ -166,23 +170,45 @@ class MainActivity : FlutterActivity() {
 
         // Handle artwork extraction (caching to local app cache directory)
         var artworkUri: String? = null
-        val artworkUriString = metadata?.getString(MediaMetadata.METADATA_KEY_ALBUM_ART_URI)
-            ?: metadata?.getString(MediaMetadata.METADATA_KEY_ART_URI)
+        var bitmap: Bitmap? = metadata?.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)
+            ?: metadata?.getBitmap(MediaMetadata.METADATA_KEY_ART)
+            ?: metadata?.getBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON)
+            ?: description?.iconBitmap
 
-        if (!artworkUriString.isNullOrEmpty()) {
-            artworkUri = artworkUriString
+        if (bitmap != null) {
+            artworkUri = saveArtworkBitmap(bitmap)
         } else {
-            val bitmap = metadata?.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)
-                ?: metadata?.getBitmap(MediaMetadata.METADATA_KEY_ART)
-            if (bitmap != null) {
-                artworkUri = saveArtworkBitmap(bitmap)
+            val uri = description?.iconUri
+                ?: run {
+                    val uriStr = metadata?.getString(MediaMetadata.METADATA_KEY_ALBUM_ART_URI)
+                        ?: metadata?.getString(MediaMetadata.METADATA_KEY_ART_URI)
+                        ?: metadata?.getString(MediaMetadata.METADATA_KEY_DISPLAY_ICON_URI)
+                    if (!uriStr.isNullOrEmpty()) android.net.Uri.parse(uriStr) else null
+                }
+
+            if (uri != null) {
+                val scheme = uri.scheme
+                if (scheme == "content" || scheme == "android.resource") {
+                    try {
+                        contentResolver.openInputStream(uri)?.use { stream ->
+                            val decoded = android.graphics.BitmapFactory.decodeStream(stream)
+                            if (decoded != null) {
+                                artworkUri = saveArtworkBitmap(decoded)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                } else {
+                    artworkUri = uri.toString()
+                }
             }
         }
 
         val result = HashMap<String, Any?>()
         result["title"] = title ?: "Unknown Track"
         result["artist"] = artist ?: "Unknown Artist"
-        result["album"] = album
+        result["album"] = album ?: description?.description?.toString()
         result["artworkUri"] = artworkUri
         result["applicationName"] = appName
         result["isPlaying"] = isPlaying
@@ -200,7 +226,11 @@ class MainActivity : FlutterActivity() {
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
             outputStream.flush()
             outputStream.close()
-            file.absolutePath
+            if (file.exists() && file.length() > 0) {
+                file.absolutePath
+            } else {
+                null
+            }
         } catch (e: Exception) {
             null
         }

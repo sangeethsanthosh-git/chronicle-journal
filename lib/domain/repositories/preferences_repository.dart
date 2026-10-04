@@ -29,7 +29,7 @@ class UserPreferences {
     this.reminderMinute = 0,
     this.isOnboardingCompleted = false,
     this.showQuotes = true,
-    this.isMusicIntegrationEnabled = false,
+    this.isMusicIntegrationEnabled = true,
     this.readerBackgroundMode = 'asset',
     this.readerBackgroundAsset = 'assets/botanical_deer.jpg',
     this.readerCustomImagePath,

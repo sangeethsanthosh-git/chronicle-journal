@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'journal_page_spread.dart';
 import 'page_shadow.dart';
 import 'page_turn_controller.dart';
-import 'paper_peel_engine.dart';
+import 'physical_page_turn.dart';
 
 /// The interactive Illustrated Journal Book object resting inside the world.
 /// Features:
@@ -167,23 +167,16 @@ class _JournalBookState extends State<JournalBook>
                         ),
                       ),
 
-                      // 2. Open Journal Pages (inset 4px for authentic bookbinding squares)
+                      // 2. Open Journal Pages
                       if (openProgress > 0.05)
-                        Positioned(
-                          left: 4,
-                          right: 4,
-                          top: 4,
-                          bottom: 4,
+                        Positioned.fill(
                           child: Opacity(
                             opacity:
                                 ((openProgress - 0.05) / 0.95).clamp(0.0, 1.0),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: PaperPeelPageTurn(
-                                spreads: widget.spreads,
-                                controller: widget.controller,
-                                paperColor: widget.paperColor,
-                              ),
+                            child: PhysicalPageTurn(
+                              spreads: widget.spreads,
+                              controller: widget.controller,
+                              paperColor: widget.paperColor,
                             ),
                           ),
                         ),

@@ -8,7 +8,7 @@ import 'package:chronicle/features/journal/presentation/widgets/journal_book.dar
 import 'package:chronicle/features/journal/presentation/widgets/journal_page.dart';
 import 'package:chronicle/features/journal/presentation/widgets/journal_page_spread.dart';
 import 'package:chronicle/features/journal/presentation/widgets/page_turn_controller.dart';
-import 'package:chronicle/features/journal/presentation/widgets/paper_peel_engine.dart';
+import 'package:chronicle/features/journal/presentation/widgets/physical_page_turn.dart';
 
 void main() {
   group('PageTurnController Tests', () {
@@ -214,7 +214,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(JournalBook), findsOneWidget);
-      expect(find.byType(PaperPeelPageTurn), findsOneWidget);
+      expect(find.byType(PhysicalPageTurn), findsOneWidget);
       expect(find.text('Spread 1 of 1'), findsOneWidget);
       expect(find.text('Landscape Spread'), findsOneWidget);
     });

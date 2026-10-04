@@ -57,6 +57,8 @@ class ReaderAtmosphereBackground extends StatelessWidget {
   final String assetPath;
   final String? customImagePath;
   final Color deskFallbackColor;
+  final double opacity;
+  final bool isReadingMode;
 
   const ReaderAtmosphereBackground({
     super.key,
@@ -65,10 +67,13 @@ class ReaderAtmosphereBackground extends StatelessWidget {
     this.assetPath = 'assets/botanical_deer.jpg',
     this.customImagePath,
     this.deskFallbackColor = const Color(0xFF2C1B10),
+    this.opacity = 1.0,
+    this.isReadingMode = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     Widget backgroundWidget;
 
     if (mode == 'custom' && customImagePath != null && customImagePath!.isNotEmpty) {
@@ -105,10 +110,50 @@ class ReaderAtmosphereBackground extends StatelessWidget {
       );
     }
 
+    if (!isReadingMode) {
+      // Full app atmospheric background with reduced opacity & soft parchment tint
+      final effectiveOpacity = opacity.clamp(0.05, 0.45);
+
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          // 1. Solid surface base
+          Positioned.fill(
+            child: Container(
+              color: isDark ? const Color(0xFF191512) : const Color(0xFFFBF8F0),
+            ),
+          ),
+
+          // 2. Wallpaper with reduced opacity
+          Positioned.fill(
+            child: Opacity(
+              opacity: effectiveOpacity,
+              child: backgroundWidget,
+            ),
+          ),
+
+          // 3. Gentle parchment tone blend for supreme text contrast
+          Positioned.fill(
+            child: Container(
+              color: isDark
+                  ? const Color(0xFF191512).withAlpha(140)
+                  : const Color(0xFFFBF8F0).withAlpha(140),
+            ),
+          ),
+
+          // 4. Foreground app content
+          Positioned.fill(
+            child: child,
+          ),
+        ],
+      );
+    }
+
+    // Reading time: Full opacity background with immersive vignette and warm ambient cast
     return Stack(
       fit: StackFit.expand,
       children: [
-        // 1. Wallpaper Image / Backdrop
+        // 1. Wallpaper Image / Backdrop (Full Opacity)
         Positioned.fill(
           child: backgroundWidget,
         ),

@@ -47,7 +47,7 @@ class PreferencesRepositoryImpl implements PreferencesRepository {
       reminderMinute: sp.getInt(_keyMinute) ?? 0,
       isOnboardingCompleted: sp.getBool(_keyOnboarding) ?? false,
       showQuotes: sp.getBool(_keyQuotes) ?? true,
-      isMusicIntegrationEnabled: sp.getBool(_keyMusicIntegration) ?? false,
+      isMusicIntegrationEnabled: sp.getBool(_keyMusicIntegration) ?? true,
       readerBackgroundMode: sp.getString(_keyReaderBgMode) ?? 'asset',
       readerBackgroundAsset:
           sp.getString(_keyReaderBgAsset) ?? 'assets/botanical_deer.jpg',
