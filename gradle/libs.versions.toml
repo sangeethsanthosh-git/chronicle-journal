@@ -21,7 +21,7 @@ junitExt = "1.2.1"
 espresso = "3.6.1"
 mockk = "1.13.13"
 turbine = "1.2.0"
-json = "20240303"
+json = "20260814"
 ktlintGradle = "12.1.2"
 detektGradle = "1.23.7"
 
