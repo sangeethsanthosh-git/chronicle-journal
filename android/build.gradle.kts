@@ -3,6 +3,15 @@ allprojects {
         google()
         mavenCentral()
     }
+    configurations.all {
+        resolutionStrategy {
+            eachDependency {
+                if (requested.group == "org.jetbrains.kotlin") {
+                    useVersion("2.1.10")
+                }
+            }
+        }
+    }
 }
 
 val newBuildDir: Directory =
