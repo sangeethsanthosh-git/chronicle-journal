@@ -3,10 +3,13 @@ import 'package:chronicle/data/repositories/journal_repository_impl.dart';
 import 'package:chronicle/features/soundtrack/domain/models/now_playing.dart';
 import 'package:chronicle/features/soundtrack/domain/models/soundtrack_card_style.dart';
 import 'package:chronicle/features/soundtrack/domain/services/music_service.dart';
+import 'package:chronicle/features/soundtrack/presentation/providers/soundtrack_providers.dart';
+import 'package:chronicle/features/soundtrack/presentation/widgets/now_playing_music_banner.dart';
 import 'package:chronicle/features/soundtrack/presentation/widgets/scrapbook_soundtrack_item.dart';
 import 'package:chronicle/features/soundtrack/presentation/widgets/soundtrack_card.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class MockMusicService implements MusicService {
@@ -309,6 +312,33 @@ void main() {
         await tester.tap(find.byIcon(Icons.close));
         await tester.pump();
         expect(deleted, isTrue);
+      },
+    );
+
+    testWidgets(
+      'NowPlayingMusicBanner renders live vinyl disc and equalizer',
+      (tester) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              nowPlayingStreamProvider.overrideWith(
+                (ref) => Stream.value(testTrack),
+              ),
+            ],
+            child: const MaterialApp(
+              home: Scaffold(
+                body: NowPlayingMusicBanner(),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+
+        expect(find.text('NOW PLAYING SOUNDTRACK'), findsOneWidget);
+        expect(find.text('Midnight Reverie'), findsOneWidget);
+        expect(find.text('Komorebi'), findsOneWidget);
       },
     );
   });

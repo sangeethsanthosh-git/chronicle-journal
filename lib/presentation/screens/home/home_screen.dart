@@ -20,6 +20,7 @@ import '../../providers/desk_theme_provider.dart';
 import '../../providers/journal_providers.dart';
 import '../../providers/memories_provider.dart';
 import '../../providers/statistics_provider.dart';
+import '../../../features/soundtrack/presentation/widgets/now_playing_music_banner.dart';
 
 enum HomeDeskMode { ringBinder, postcardRack }
 
@@ -396,7 +397,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // 2. Tactile Stationery Action Strip (pinned like index tabs)
           _buildStationeryTabs(context),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
+
+          // 2a. Live Soundtrack Music Banner
+          const NowPlayingMusicBanner(showHintWhenIdle: true),
+
+          const SizedBox(height: 10),
 
           // 2b. Physical Illustrated Bookshelf Shortcut Banner
           _buildJournalStackBanner(context),

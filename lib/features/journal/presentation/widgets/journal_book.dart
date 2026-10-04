@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'journal_page_spread.dart';
 import 'page_shadow.dart';
 import 'page_turn_controller.dart';
-import 'physical_page_turn.dart';
+import 'paper_peel_engine.dart';
 
 /// The interactive Illustrated Journal Book object resting inside the world.
 /// Features:
@@ -166,7 +166,7 @@ class _JournalBookState extends State<JournalBook>
                           child: Opacity(
                             opacity:
                                 ((openProgress - 0.05) / 0.95).clamp(0.0, 1.0),
-                            child: PhysicalPageTurn(
+                            child: PaperPeelPageTurn(
                               spreads: widget.spreads,
                               controller: widget.controller,
                               paperColor: widget.paperColor,

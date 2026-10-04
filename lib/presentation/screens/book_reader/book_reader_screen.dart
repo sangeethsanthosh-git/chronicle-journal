@@ -25,6 +25,7 @@ import '../../providers/journal_providers.dart';
 import '../../providers/statistics_provider.dart';
 import 'book_3d_page_view.dart';
 import 'book_page_data.dart';
+import '../../../features/soundtrack/presentation/widgets/now_playing_music_banner.dart';
 
 enum ReaderBindingStyle {
   gameCodex,
@@ -53,7 +54,7 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
   bool _showControls = true;
   bool _isDualSpread = false;
   bool _isJournalOpen = true;
-  ReaderBindingStyle _bindingStyle = ReaderBindingStyle.hardcover;
+  ReaderBindingStyle _bindingStyle = ReaderBindingStyle.physicalStudy;
   CodexTab _codexTab = CodexTab.story;
   String? _selectedEntryId;
   bool _isLandscape = false;
@@ -750,6 +751,14 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
                             ],
                           ),
                         ),
+                      ),
+
+                      // Live Music Soundtrack Banner in Book Reader
+                      Positioned(
+                        top: 54,
+                        left: 16,
+                        right: 16,
+                        child: const NowPlayingMusicBanner(compact: true),
                       ),
 
                       // Bottom Navigation Bar

@@ -23,7 +23,9 @@ import '../../../domain/models/paper_style.dart';
 import '../../../features/soundtrack/domain/models/now_playing.dart';
 import '../../../features/soundtrack/domain/models/soundtrack_card_style.dart';
 import '../../../features/soundtrack/presentation/widgets/attach_soundtrack_dialog.dart';
+import '../../../features/soundtrack/presentation/widgets/now_playing_music_banner.dart';
 import '../../../features/soundtrack/presentation/widgets/soundtrack_card.dart';
+import '../../../features/soundtrack/presentation/providers/soundtrack_providers.dart';
 import '../../providers/database_provider.dart';
 import '../../providers/preferences_provider.dart';
 
@@ -800,6 +802,18 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                         onStyleChanged: (newStyle) =>
                             setState(() => _soundtrackStyle = newStyle),
                       ),
+                    ),
+                  ],
+
+                  // Live Music Soundtrack Detection Banner
+                  if (_attachedSoundtrack == null) ...[
+                    NowPlayingMusicBanner(
+                      onAttach: () {
+                        final track = ref.read(nowPlayingStreamProvider).value;
+                        if (track != null) {
+                          setState(() => _attachedSoundtrack = track);
+                        }
+                      },
                     ),
                   ],
                 ],
