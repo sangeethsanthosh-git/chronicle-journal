@@ -83,6 +83,13 @@ class CollectionsScreen extends ConsumerWidget {
             'Journal Collections',
             style: TextStyle(fontFamily: 'serif', fontWeight: FontWeight.bold),
           ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.shelves),
+              tooltip: 'View as Illustrated Bookshelf',
+              onPressed: () => context.push('/journal-stack'),
+            ),
+          ],
         ),
         body: collectionsAsync.when(
           data: (collections) {

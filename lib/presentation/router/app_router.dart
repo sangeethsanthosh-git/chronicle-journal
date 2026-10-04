@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/journal_stack/presentation/screens/journal_stack_screen.dart';
 import '../providers/preferences_provider.dart';
 import '../screens/book_reader/book_reader_screen.dart';
 import '../screens/calendar/calendar_screen.dart';
@@ -137,6 +138,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final id = state.pathParameters['id']!;
           return CollectionDetailScreen(collectionId: id);
         },
+      ),
+      GoRoute(
+        path: '/journal-stack',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const JournalStackScreen(),
       ),
       GoRoute(
         path: '/lock',

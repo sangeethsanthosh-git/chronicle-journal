@@ -1,8 +1,10 @@
 import 'package:drift/drift.dart';
+import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../local/app_database.dart';
 import '../../domain/models/journal_entry_with_details.dart';
 import '../../domain/repositories/journal_repository.dart';
+import '../../features/journal_stack/domain/models/journal_stack_item.dart';
 
 class JournalRepositoryImpl implements JournalRepository {
   final AppDatabase _db;
@@ -237,5 +239,146 @@ class JournalRepositoryImpl implements JournalRepository {
   @override
   Future<void> removeEntryFromCollection(String collectionId, String entryId) {
     return _db.removeEntryFromCollection(collectionId, entryId);
+  }
+
+  @override
+  Stream<List<JournalStackItem>> watchJournalStackItems() {
+    return _db.watchAllCollections().asyncMap((collections) async {
+      final items = <JournalStackItem>[];
+      for (final col in collections) {
+        final entries = await _db.getEntriesForCollection(col.id);
+        int photoCount = 0;
+        DateTime? minDate;
+        DateTime? maxDate;
+        final moodCounts = <String, int>{};
+
+        for (final e in entries) {
+          final attachments = await _db.getAttachmentsForEntry(e.id);
+          photoCount += attachments.where((a) => a.type == 'image').length;
+
+          if (minDate == null || e.entryDate.isBefore(minDate)) {
+            minDate = e.entryDate;
+          }
+          if (maxDate == null || e.entryDate.isAfter(maxDate)) {
+            maxDate = e.entryDate;
+          }
+          if (e.mood != null && e.mood!.isNotEmpty) {
+            moodCounts[e.mood!] = (moodCounts[e.mood!] ?? 0) + 1;
+          }
+        }
+
+        String? moodSummary;
+        if (moodCounts.isNotEmpty) {
+          final topMood = moodCounts.entries
+              .reduce((a, b) => a.value >= b.value ? a : b)
+              .key;
+          moodSummary = 'Mostly $topMood';
+        } else {
+          moodSummary = 'Ready for reflections';
+        }
+
+        final cat = JournalCategory.fromString(col.category);
+        Color spineColor = cat.defaultColor;
+        if (col.colorHex != null && col.colorHex!.isNotEmpty) {
+          try {
+            final hex = col.colorHex!.replaceFirst('#', '');
+            final val = int.parse(hex.length == 6 ? 'FF$hex' : hex, radix: 16);
+            spineColor = Color(val);
+          } catch (_) {}
+        }
+
+        items.add(
+          JournalStackItem(
+            id: col.id,
+            title: col.name,
+            description: col.description,
+            coverImage: col.coverImageUri,
+            category: cat,
+            spineColor: spineColor,
+            createdAt: col.createdAt,
+            updatedAt: col.updatedAt ?? col.createdAt,
+            startDate: minDate,
+            endDate: maxDate,
+            entryCount: entries.length,
+            photoCount: photoCount,
+            isArchived: col.isArchived,
+            moodSummary: moodSummary,
+            entryIds: entries.map((e) => e.id).toList(),
+          ),
+        );
+      }
+      return items;
+    });
+  }
+
+  @override
+  Future<void> createJournalVolume({
+    required String title,
+    String? description,
+    String? coverImage,
+    required String category,
+    String? colorHex,
+  }) {
+    final catEnum = JournalCategory.fromString(category);
+    final chosenColorHex =
+        colorHex ??
+        '#${catEnum.defaultColor.toARGB32().toRadixString(16).padLeft(8, '0')}';
+    final now = DateTime.now();
+    return _db.insertCollection(
+      CollectionsCompanion(
+        id: Value(_uuid.v4()),
+        name: Value(title),
+        description: Value(description),
+        coverImageUri: Value(coverImage),
+        category: Value(category),
+        colorHex: Value(chosenColorHex),
+        isArchived: const Value(false),
+        createdAt: Value(now),
+        updatedAt: Value(now),
+      ),
+    );
+  }
+
+  @override
+  Future<void> updateJournalVolume({
+    required String id,
+    String? title,
+    String? description,
+    String? coverImage,
+    String? category,
+    String? colorHex,
+  }) async {
+    final existing = await (_db.select(
+      _db.collections,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    if (existing == null) return;
+
+    await _db.updateCollection(
+      CollectionsCompanion(
+        id: Value(id),
+        name: title != null ? Value(title) : Value(existing.name),
+        description: description != null
+            ? Value(description)
+            : Value(existing.description),
+        coverImageUri: coverImage != null
+            ? Value(coverImage)
+            : Value(existing.coverImageUri),
+        category: category != null ? Value(category) : Value(existing.category),
+        colorHex: colorHex != null ? Value(colorHex) : Value(existing.colorHex),
+        isArchived: Value(existing.isArchived),
+        createdAt: Value(existing.createdAt),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  @override
+  Future<void> toggleArchiveJournalVolume(String id, bool isArchived) {
+    return _db.setCollectionArchived(id, isArchived);
+  }
+
+  @override
+  Future<void> deleteJournalVolume(String id) {
+    return _db.deleteCollection(id);
   }
 }

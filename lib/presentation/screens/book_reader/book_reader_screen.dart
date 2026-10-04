@@ -16,16 +16,27 @@ import '../../../features/journal/presentation/widgets/journal_book.dart';
 import '../../../features/journal/presentation/widgets/journal_page.dart';
 import '../../../features/journal/presentation/widgets/journal_page_spread.dart';
 import '../../../features/journal/presentation/widgets/page_turn_controller.dart';
+import '../../../features/journal_reader/presentation/widgets/codex_achievements_page.dart';
+import '../../../features/journal_reader/presentation/widgets/codex_audio_memo_page.dart';
+import '../../../features/journal_reader/presentation/widgets/codex_photo_dossier_page.dart';
+import '../../../features/journal_reader/presentation/widgets/codex_tab_header.dart';
 import '../../providers/desk_theme_provider.dart';
 import '../../providers/journal_providers.dart';
+import '../../providers/statistics_provider.dart';
 import 'book_3d_page_view.dart';
 import 'book_page_data.dart';
 
-enum ReaderBindingStyle { physicalStudy, ringBinder, hardcover, postcard }
+enum ReaderBindingStyle {
+  gameCodex,
+  physicalStudy,
+  ringBinder,
+  hardcover,
+  postcard,
+}
 
 /// Immersive Book Reader Screen allowing users to read their journal entries
 /// like a real physical illustrated notebook resting on a desk (Rebecca Mock style),
-/// or as a classic ring binder / hardcover book spread.
+/// a game codex notebook with protruding tabs, or as a classic ring binder / hardcover book spread.
 class BookReaderScreen extends ConsumerStatefulWidget {
   final String? entryId;
 
@@ -42,7 +53,8 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
   bool _showControls = true;
   bool _isDualSpread = false;
   bool _isJournalOpen = true;
-  ReaderBindingStyle _bindingStyle = ReaderBindingStyle.physicalStudy;
+  ReaderBindingStyle _bindingStyle = ReaderBindingStyle.gameCodex;
+  CodexTab _codexTab = CodexTab.story;
   String? _selectedEntryId;
   bool _isLandscape = false;
 
@@ -379,7 +391,63 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
 
           Widget readerContent;
 
-          if (_bindingStyle == ReaderBindingStyle.physicalStudy) {
+          if (_bindingStyle == ReaderBindingStyle.gameCodex) {
+            final stats = ref.watch(statisticsProvider);
+            final achievements = ref.watch(achievementsProvider);
+
+            Widget codexBody;
+            switch (_codexTab) {
+              case CodexTab.story:
+                final spreads = _buildJournalSpreads(entries, deskTheme);
+                codexBody = Center(
+                  child: JournalBook(
+                    spreads: spreads,
+                    controller: _pageTurnController,
+                    coverColor: deskTheme.coverColor,
+                    paperColor: deskTheme.paperColor,
+                    initialOpen: _isJournalOpen,
+                    onBookOpened: () => setState(() => _isJournalOpen = true),
+                    onBookClosed: () => setState(() => _isJournalOpen = false),
+                  ),
+                );
+                break;
+              case CodexTab.photos:
+                codexBody = CodexPhotoDossierPage(entries: entries);
+                break;
+              case CodexTab.achievements:
+                codexBody = CodexAchievementsPage(
+                  achievements: achievements,
+                  streak: stats.currentStreak,
+                  totalEntries: entries.length,
+                );
+                break;
+              case CodexTab.audio:
+                codexBody = CodexAudioMemoPage(entries: entries);
+                break;
+            }
+
+            readerContent = Container(
+              color: deskTheme.deskColor,
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 8),
+                    CodexTabHeader(
+                      activeTab: _codexTab,
+                      onTabSelected: (tab) => setState(() => _codexTab = tab),
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: codexBody,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          } else if (_bindingStyle == ReaderBindingStyle.physicalStudy) {
             // Physical Illustrated Notebook in Study Room (Rebecca Mock inspiration)
             final spreads = _buildJournalSpreads(entries, deskTheme);
             readerContent = IllustratedStudyEnvironment(
@@ -388,6 +456,7 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
               onTapOutside: () {
                 setState(() => _isJournalOpen = false);
               },
+              onTapBookshelf: () => context.push('/journal-stack'),
               child: JournalBook(
                 spreads: spreads,
                 controller: _pageTurnController,
@@ -520,6 +589,12 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
                                 setState(() => _bindingStyle = style);
                               },
                               itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: ReaderBindingStyle.gameCodex,
+                                  child: Text(
+                                    '🎮 Game Codex Notebook (References 1-4)',
+                                  ),
+                                ),
                                 const PopupMenuItem(
                                   value: ReaderBindingStyle.physicalStudy,
                                   child: Text('✨ Physical Illustrated Journal'),

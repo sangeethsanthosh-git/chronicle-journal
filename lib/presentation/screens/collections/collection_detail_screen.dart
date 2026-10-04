@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/paper_background.dart';
 import '../../providers/database_provider.dart';
@@ -74,6 +75,16 @@ class CollectionDetailScreen extends ConsumerWidget {
             style: TextStyle(fontFamily: 'serif', fontWeight: FontWeight.bold),
           ),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.shelves),
+              tooltip: 'Journal Stack (Bookshelf)',
+              onPressed: () => context.push('/journal-stack'),
+            ),
+            IconButton(
+              icon: const Icon(Icons.auto_stories),
+              tooltip: 'Read as Physical Book',
+              onPressed: () => context.push('/book-reader'),
+            ),
             IconButton(
               icon: const Icon(Icons.add_circle_outline),
               tooltip: 'Add Entry',

@@ -1,4 +1,5 @@
 import '../../data/local/app_database.dart';
+import '../../features/journal_stack/domain/models/journal_stack_item.dart';
 import '../models/journal_entry_with_details.dart';
 
 abstract class JournalRepository {
@@ -35,7 +36,7 @@ abstract class JournalRepository {
   Future<void> createTag(String name, String colorHex);
   Future<void> deleteTag(String id);
 
-  // Collections
+  // Collections / Journal Stack
   Stream<List<Collection>> watchAllCollections();
   Future<List<Collection>> getAllCollections();
   Future<void> createCollection(
@@ -49,4 +50,24 @@ abstract class JournalRepository {
   );
   Future<void> addEntryToCollection(String collectionId, String entryId);
   Future<void> removeEntryFromCollection(String collectionId, String entryId);
+
+  // Journal Stack
+  Stream<List<JournalStackItem>> watchJournalStackItems();
+  Future<void> createJournalVolume({
+    required String title,
+    String? description,
+    String? coverImage,
+    required String category,
+    String? colorHex,
+  });
+  Future<void> updateJournalVolume({
+    required String id,
+    String? title,
+    String? description,
+    String? coverImage,
+    String? category,
+    String? colorHex,
+  });
+  Future<void> toggleArchiveJournalVolume(String id, bool isArchived);
+  Future<void> deleteJournalVolume(String id);
 }

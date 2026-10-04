@@ -14,6 +14,7 @@ class IllustratedStudyEnvironment extends StatefulWidget {
   final bool isJournalOpen;
   final DeskThemeData deskTheme;
   final VoidCallback? onTapOutside;
+  final VoidCallback? onTapBookshelf;
 
   const IllustratedStudyEnvironment({
     super.key,
@@ -21,6 +22,7 @@ class IllustratedStudyEnvironment extends StatefulWidget {
     required this.isJournalOpen,
     required this.deskTheme,
     this.onTapOutside,
+    this.onTapBookshelf,
   });
 
   @override
@@ -90,6 +92,66 @@ class _IllustratedStudyEnvironmentState
                 ),
               ),
             ),
+
+            // 3b. Interactive Bookshelf Prop on Top Right (Navigates to Journal Stack)
+            if (widget.onTapBookshelf != null)
+              Positioned(
+                top: 15,
+                right: 10,
+                width: 150,
+                height: 80,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: widget.onTapBookshelf,
+                    child: Tooltip(
+                      message: 'Open Journal Stack',
+                      child: Container(
+                        padding: const EdgeInsets.only(top: 4, right: 8),
+                        alignment: Alignment.topRight,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: const Color(
+                                0xFFD4AF37,
+                              ).withValues(alpha: 0.6),
+                              width: 0.8,
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.auto_stories,
+                                size: 10,
+                                color: Color(0xFFF7E7CE),
+                              ),
+                              SizedBox(width: 3),
+                              Text(
+                                'SHELF',
+                                style: TextStyle(
+                                  fontFamily: 'serif',
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFF7E7CE),
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
 
             // 4. Center Desk Area with Journal
             Center(

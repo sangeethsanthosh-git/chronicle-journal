@@ -3,6 +3,10 @@ import '../../data/local/app_database.dart';
 import '../../domain/models/journal_entry_with_details.dart';
 import '../../domain/models/journal_layout.dart';
 import '../../domain/models/mood.dart';
+import '../../domain/usecases/calculate_streak_usecase.dart';
+import '../../features/achievements/domain/models/journal_achievement.dart';
+import '../../features/achievements/domain/usecases/evaluate_achievements_usecase.dart';
+import '../../features/journal_stack/domain/models/journal_stack_item.dart';
 import 'database_provider.dart';
 
 enum EntrySortOrder { newestFirst, oldestFirst, recentlyUpdated }
@@ -97,6 +101,13 @@ final allCollectionsStreamProvider = StreamProvider<List<Collection>>((ref) {
   return repo.watchAllCollections();
 });
 
+final journalStackStreamProvider = StreamProvider<List<JournalStackItem>>((
+  ref,
+) {
+  final repo = ref.watch(journalRepositoryProvider);
+  return repo.watchJournalStackItems();
+});
+
 final filteredEntriesProvider = Provider<List<JournalEntryWithDetails>>((ref) {
   final entriesAsync = ref.watch(allEntriesStreamProvider);
   final filter = ref.watch(entryFilterProvider);
@@ -189,5 +200,18 @@ final todayEntryProvider = Provider<JournalEntryWithDetails?>((ref) {
     },
     loading: () => null,
     error: (err, stack) => null,
+  );
+});
+
+final achievementsProvider = Provider<List<JournalAchievement>>((ref) {
+  final entries = ref.watch(allEntriesStreamProvider).value ?? [];
+  final volumes = ref.watch(journalStackStreamProvider).value ?? [];
+  final entryDates = entries.map((e) => e.entry.entryDate).toList();
+  final streak = CalculateStreakUseCase().execute(entryDates);
+
+  return EvaluateAchievementsUseCase().execute(
+    entries: entries,
+    streak: streak.currentStreak,
+    journalVolumeCount: volumes.length,
   );
 });

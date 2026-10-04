@@ -1967,6 +1967,55 @@ class $CollectionsTable extends Collections
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('PERSONAL'),
+  );
+  static const VerificationMeta _colorHexMeta = const VerificationMeta(
+    'colorHex',
+  );
+  @override
+  late final GeneratedColumn<String> colorHex = GeneratedColumn<String>(
+    'color_hex',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isArchivedMeta = const VerificationMeta(
+    'isArchived',
+  );
+  @override
+  late final GeneratedColumn<bool> isArchived = GeneratedColumn<bool>(
+    'is_archived',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_archived" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1974,6 +2023,10 @@ class $CollectionsTable extends Collections
     description,
     coverImageUri,
     createdAt,
+    category,
+    colorHex,
+    isArchived,
+    updatedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2026,6 +2079,30 @@ class $CollectionsTable extends Collections
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    }
+    if (data.containsKey('color_hex')) {
+      context.handle(
+        _colorHexMeta,
+        colorHex.isAcceptableOrUnknown(data['color_hex']!, _colorHexMeta),
+      );
+    }
+    if (data.containsKey('is_archived')) {
+      context.handle(
+        _isArchivedMeta,
+        isArchived.isAcceptableOrUnknown(data['is_archived']!, _isArchivedMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
     return context;
   }
 
@@ -2055,6 +2132,22 @@ class $CollectionsTable extends Collections
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      colorHex: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}color_hex'],
+      ),
+      isArchived: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_archived'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
     );
   }
 
@@ -2070,12 +2163,20 @@ class Collection extends DataClass implements Insertable<Collection> {
   final String? description;
   final String? coverImageUri;
   final DateTime createdAt;
+  final String category;
+  final String? colorHex;
+  final bool isArchived;
+  final DateTime? updatedAt;
   const Collection({
     required this.id,
     required this.name,
     this.description,
     this.coverImageUri,
     required this.createdAt,
+    required this.category,
+    this.colorHex,
+    required this.isArchived,
+    this.updatedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2089,6 +2190,14 @@ class Collection extends DataClass implements Insertable<Collection> {
       map['cover_image_uri'] = Variable<String>(coverImageUri);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
+    map['category'] = Variable<String>(category);
+    if (!nullToAbsent || colorHex != null) {
+      map['color_hex'] = Variable<String>(colorHex);
+    }
+    map['is_archived'] = Variable<bool>(isArchived);
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
     return map;
   }
 
@@ -2103,6 +2212,14 @@ class Collection extends DataClass implements Insertable<Collection> {
           ? const Value.absent()
           : Value(coverImageUri),
       createdAt: Value(createdAt),
+      category: Value(category),
+      colorHex: colorHex == null && nullToAbsent
+          ? const Value.absent()
+          : Value(colorHex),
+      isArchived: Value(isArchived),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
     );
   }
 
@@ -2117,6 +2234,10 @@ class Collection extends DataClass implements Insertable<Collection> {
       description: serializer.fromJson<String?>(json['description']),
       coverImageUri: serializer.fromJson<String?>(json['coverImageUri']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      category: serializer.fromJson<String>(json['category']),
+      colorHex: serializer.fromJson<String?>(json['colorHex']),
+      isArchived: serializer.fromJson<bool>(json['isArchived']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
     );
   }
   @override
@@ -2128,6 +2249,10 @@ class Collection extends DataClass implements Insertable<Collection> {
       'description': serializer.toJson<String?>(description),
       'coverImageUri': serializer.toJson<String?>(coverImageUri),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'category': serializer.toJson<String>(category),
+      'colorHex': serializer.toJson<String?>(colorHex),
+      'isArchived': serializer.toJson<bool>(isArchived),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
     };
   }
 
@@ -2137,6 +2262,10 @@ class Collection extends DataClass implements Insertable<Collection> {
     Value<String?> description = const Value.absent(),
     Value<String?> coverImageUri = const Value.absent(),
     DateTime? createdAt,
+    String? category,
+    Value<String?> colorHex = const Value.absent(),
+    bool? isArchived,
+    Value<DateTime?> updatedAt = const Value.absent(),
   }) => Collection(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -2145,6 +2274,10 @@ class Collection extends DataClass implements Insertable<Collection> {
         ? coverImageUri.value
         : this.coverImageUri,
     createdAt: createdAt ?? this.createdAt,
+    category: category ?? this.category,
+    colorHex: colorHex.present ? colorHex.value : this.colorHex,
+    isArchived: isArchived ?? this.isArchived,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
   );
   Collection copyWithCompanion(CollectionsCompanion data) {
     return Collection(
@@ -2157,6 +2290,12 @@ class Collection extends DataClass implements Insertable<Collection> {
           ? data.coverImageUri.value
           : this.coverImageUri,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      category: data.category.present ? data.category.value : this.category,
+      colorHex: data.colorHex.present ? data.colorHex.value : this.colorHex,
+      isArchived: data.isArchived.present
+          ? data.isArchived.value
+          : this.isArchived,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
   }
 
@@ -2167,14 +2306,27 @@ class Collection extends DataClass implements Insertable<Collection> {
           ..write('name: $name, ')
           ..write('description: $description, ')
           ..write('coverImageUri: $coverImageUri, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('category: $category, ')
+          ..write('colorHex: $colorHex, ')
+          ..write('isArchived: $isArchived, ')
+          ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, description, coverImageUri, createdAt);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    description,
+    coverImageUri,
+    createdAt,
+    category,
+    colorHex,
+    isArchived,
+    updatedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2183,7 +2335,11 @@ class Collection extends DataClass implements Insertable<Collection> {
           other.name == this.name &&
           other.description == this.description &&
           other.coverImageUri == this.coverImageUri &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.category == this.category &&
+          other.colorHex == this.colorHex &&
+          other.isArchived == this.isArchived &&
+          other.updatedAt == this.updatedAt);
 }
 
 class CollectionsCompanion extends UpdateCompanion<Collection> {
@@ -2192,6 +2348,10 @@ class CollectionsCompanion extends UpdateCompanion<Collection> {
   final Value<String?> description;
   final Value<String?> coverImageUri;
   final Value<DateTime> createdAt;
+  final Value<String> category;
+  final Value<String?> colorHex;
+  final Value<bool> isArchived;
+  final Value<DateTime?> updatedAt;
   final Value<int> rowid;
   const CollectionsCompanion({
     this.id = const Value.absent(),
@@ -2199,6 +2359,10 @@ class CollectionsCompanion extends UpdateCompanion<Collection> {
     this.description = const Value.absent(),
     this.coverImageUri = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.category = const Value.absent(),
+    this.colorHex = const Value.absent(),
+    this.isArchived = const Value.absent(),
+    this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   CollectionsCompanion.insert({
@@ -2207,6 +2371,10 @@ class CollectionsCompanion extends UpdateCompanion<Collection> {
     this.description = const Value.absent(),
     this.coverImageUri = const Value.absent(),
     required DateTime createdAt,
+    this.category = const Value.absent(),
+    this.colorHex = const Value.absent(),
+    this.isArchived = const Value.absent(),
+    this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -2217,6 +2385,10 @@ class CollectionsCompanion extends UpdateCompanion<Collection> {
     Expression<String>? description,
     Expression<String>? coverImageUri,
     Expression<DateTime>? createdAt,
+    Expression<String>? category,
+    Expression<String>? colorHex,
+    Expression<bool>? isArchived,
+    Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2225,6 +2397,10 @@ class CollectionsCompanion extends UpdateCompanion<Collection> {
       if (description != null) 'description': description,
       if (coverImageUri != null) 'cover_image_uri': coverImageUri,
       if (createdAt != null) 'created_at': createdAt,
+      if (category != null) 'category': category,
+      if (colorHex != null) 'color_hex': colorHex,
+      if (isArchived != null) 'is_archived': isArchived,
+      if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2235,6 +2411,10 @@ class CollectionsCompanion extends UpdateCompanion<Collection> {
     Value<String?>? description,
     Value<String?>? coverImageUri,
     Value<DateTime>? createdAt,
+    Value<String>? category,
+    Value<String?>? colorHex,
+    Value<bool>? isArchived,
+    Value<DateTime?>? updatedAt,
     Value<int>? rowid,
   }) {
     return CollectionsCompanion(
@@ -2243,6 +2423,10 @@ class CollectionsCompanion extends UpdateCompanion<Collection> {
       description: description ?? this.description,
       coverImageUri: coverImageUri ?? this.coverImageUri,
       createdAt: createdAt ?? this.createdAt,
+      category: category ?? this.category,
+      colorHex: colorHex ?? this.colorHex,
+      isArchived: isArchived ?? this.isArchived,
+      updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2265,6 +2449,18 @@ class CollectionsCompanion extends UpdateCompanion<Collection> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (colorHex.present) {
+      map['color_hex'] = Variable<String>(colorHex.value);
+    }
+    if (isArchived.present) {
+      map['is_archived'] = Variable<bool>(isArchived.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2279,6 +2475,10 @@ class CollectionsCompanion extends UpdateCompanion<Collection> {
           ..write('description: $description, ')
           ..write('coverImageUri: $coverImageUri, ')
           ..write('createdAt: $createdAt, ')
+          ..write('category: $category, ')
+          ..write('colorHex: $colorHex, ')
+          ..write('isArchived: $isArchived, ')
+          ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4345,6 +4545,10 @@ typedef $$CollectionsTableCreateCompanionBuilder =
       Value<String?> description,
       Value<String?> coverImageUri,
       required DateTime createdAt,
+      Value<String> category,
+      Value<String?> colorHex,
+      Value<bool> isArchived,
+      Value<DateTime?> updatedAt,
       Value<int> rowid,
     });
 typedef $$CollectionsTableUpdateCompanionBuilder =
@@ -4354,6 +4558,10 @@ typedef $$CollectionsTableUpdateCompanionBuilder =
       Value<String?> description,
       Value<String?> coverImageUri,
       Value<DateTime> createdAt,
+      Value<String> category,
+      Value<String?> colorHex,
+      Value<bool> isArchived,
+      Value<DateTime?> updatedAt,
       Value<int> rowid,
     });
 
@@ -4422,6 +4630,26 @@ class $$CollectionsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get colorHex => $composableBuilder(
+    column: $table.colorHex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
   Expression<bool> collectionEntryCrossRefsRefs(
     Expression<bool> Function($$CollectionEntryCrossRefsTableFilterComposer f)
     f,
@@ -4483,6 +4711,26 @@ class $$CollectionsTableOrderingComposer
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get colorHex => $composableBuilder(
+    column: $table.colorHex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$CollectionsTableAnnotationComposer
@@ -4512,6 +4760,20 @@ class $$CollectionsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<String> get colorHex =>
+      $composableBuilder(column: $table.colorHex, builder: (column) => column);
+
+  GeneratedColumn<bool> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
   Expression<T> collectionEntryCrossRefsRefs<T extends Object>(
     Expression<T> Function($$CollectionEntryCrossRefsTableAnnotationComposer a)
@@ -4574,6 +4836,10 @@ class $$CollectionsTableTableManager
                 Value<String?> description = const Value.absent(),
                 Value<String?> coverImageUri = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<String?> colorHex = const Value.absent(),
+                Value<bool> isArchived = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CollectionsCompanion(
                 id: id,
@@ -4581,6 +4847,10 @@ class $$CollectionsTableTableManager
                 description: description,
                 coverImageUri: coverImageUri,
                 createdAt: createdAt,
+                category: category,
+                colorHex: colorHex,
+                isArchived: isArchived,
+                updatedAt: updatedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4590,6 +4860,10 @@ class $$CollectionsTableTableManager
                 Value<String?> description = const Value.absent(),
                 Value<String?> coverImageUri = const Value.absent(),
                 required DateTime createdAt,
+                Value<String> category = const Value.absent(),
+                Value<String?> colorHex = const Value.absent(),
+                Value<bool> isArchived = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CollectionsCompanion.insert(
                 id: id,
@@ -4597,6 +4871,10 @@ class $$CollectionsTableTableManager
                 description: description,
                 coverImageUri: coverImageUri,
                 createdAt: createdAt,
+                category: category,
+                colorHex: colorHex,
+                isArchived: isArchived,
+                updatedAt: updatedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

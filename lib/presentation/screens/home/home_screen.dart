@@ -220,6 +220,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.shelves, color: Colors.white),
+            tooltip: 'Journal Stack (Bookshelf)',
+            onPressed: () => context.push('/journal-stack'),
+          ),
+          IconButton(
             icon: const Icon(Icons.auto_stories_rounded, color: Colors.white),
             tooltip: 'Read as Physical Book',
             onPressed: () => context.push('/book-reader'),
@@ -241,11 +246,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ? HomeDeskMode.postcardRack
                       : HomeDeskMode.ringBinder;
                 });
+              } else if (val == 'stack') {
+                context.push('/journal-stack');
               } else if (val == 'collections') {
                 context.push('/collections');
               }
             },
             itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'stack',
+                child: Row(
+                  children: [
+                    Icon(Icons.shelves, size: 18),
+                    SizedBox(width: 8),
+                    Text('Journal Stack'),
+                  ],
+                ),
+              ),
               PopupMenuItem(
                 value: 'theme',
                 child: Row(
@@ -379,6 +396,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // 2. Tactile Stationery Action Strip (pinned like index tabs)
           _buildStationeryTabs(context),
 
+          const SizedBox(height: 14),
+
+          // 2b. Physical Illustrated Bookshelf Shortcut Banner
+          _buildJournalStackBanner(context),
+
           const SizedBox(height: 18),
 
           // 3. Today's Entry Section (Image 4: Pinned with paperclip or taped)
@@ -440,6 +462,76 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             onTap: () => context.push('/editor?focusMood=true'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildJournalStackBanner(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push('/journal-stack'),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7F2E8),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFDECDB7)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              offset: const Offset(0, 3),
+              blurRadius: 6,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: const Color(0xFF2C2218),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.shelves,
+                color: Color(0xFFFAF7EE),
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'JOURNAL STACK',
+                    style: TextStyle(
+                      fontFamily: 'serif',
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                      color: Color(0xFF2C2218),
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'Browse volumes on the physical bookshelf',
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      fontSize: 11,
+                      color: Color(0xFF7A6B5D),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 13,
+              color: Color(0xFF8C7355),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -68,6 +68,10 @@ class Collections extends Table {
   TextColumn get description => text().nullable()();
   TextColumn get coverImageUri => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
+  TextColumn get category => text().withDefault(const Constant('PERSONAL'))();
+  TextColumn get colorHex => text().nullable()();
+  BoolColumn get isArchived => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get updatedAt => dateTime().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -97,12 +101,20 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
       await m.createAll();
+    },
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.addColumn(collections, collections.category);
+        await m.addColumn(collections, collections.colorHex);
+        await m.addColumn(collections, collections.isArchived);
+        await m.addColumn(collections, collections.updatedAt);
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -214,6 +226,15 @@ class AppDatabase extends _$AppDatabase {
   Future<List<Collection>> getAllCollections() => select(collections).get();
   Future<int> insertCollection(CollectionsCompanion col) =>
       into(collections).insertOnConflictUpdate(col);
+  Future<int> updateCollection(CollectionsCompanion col) =>
+      (update(collections)..where((t) => t.id.equals(col.id.value))).write(col);
+  Future<int> setCollectionArchived(String id, bool isArchived) =>
+      (update(collections)..where((t) => t.id.equals(id))).write(
+        CollectionsCompanion(
+          isArchived: Value(isArchived),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
   Future<int> deleteCollection(String id) =>
       (delete(collections)..where((t) => t.id.equals(id))).go();
 
