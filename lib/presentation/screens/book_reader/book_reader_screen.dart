@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -10,16 +11,21 @@ import '../../../core/widgets/desk_background.dart';
 import '../../../core/widgets/ring_binder_frame.dart';
 import '../../../core/widgets/vintage_postcard_widget.dart';
 import '../../../domain/models/journal_entry_with_details.dart';
+import '../../../features/journal/presentation/widgets/illustrated_study_environment.dart';
+import '../../../features/journal/presentation/widgets/journal_book.dart';
+import '../../../features/journal/presentation/widgets/journal_page.dart';
+import '../../../features/journal/presentation/widgets/journal_page_spread.dart';
+import '../../../features/journal/presentation/widgets/page_turn_controller.dart';
 import '../../providers/desk_theme_provider.dart';
 import '../../providers/journal_providers.dart';
 import 'book_3d_page_view.dart';
 import 'book_page_data.dart';
 
-enum ReaderBindingStyle { ringBinder, hardcover, postcard }
+enum ReaderBindingStyle { physicalStudy, ringBinder, hardcover, postcard }
 
 /// Immersive Book Reader Screen allowing users to read their journal entries
-/// like a real physical ring binder or hardcover book resting on a desk,
-/// or as an authentic vintage postcard spread.
+/// like a real physical illustrated notebook resting on a desk (Rebecca Mock style),
+/// or as a classic ring binder / hardcover book spread.
 class BookReaderScreen extends ConsumerStatefulWidget {
   final String? entryId;
 
@@ -31,11 +37,14 @@ class BookReaderScreen extends ConsumerStatefulWidget {
 
 class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
   late PageController _pageController;
+  late PageTurnController _pageTurnController;
   int _currentPageIndex = 0;
   bool _showControls = true;
   bool _isDualSpread = false;
-  ReaderBindingStyle _bindingStyle = ReaderBindingStyle.ringBinder;
+  bool _isJournalOpen = true;
+  ReaderBindingStyle _bindingStyle = ReaderBindingStyle.physicalStudy;
   String? _selectedEntryId;
+  bool _isLandscape = false;
 
   @override
   void initState() {
@@ -43,11 +52,43 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
     FocusManager.instance.primaryFocus?.unfocus();
     _selectedEntryId = widget.entryId;
     _pageController = PageController();
+    _pageTurnController = PageTurnController();
+    _pageTurnController.addListener(_onSpreadChanged);
+  }
+
+  void _onSpreadChanged() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _toggleOrientation() async {
+    final next = !_isLandscape;
+    setState(() => _isLandscape = next);
+    if (next) {
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    } else {
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    }
   }
 
   @override
   void dispose() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    _pageTurnController.removeListener(_onSpreadChanged);
     _pageController.dispose();
+    _pageTurnController.dispose();
     super.dispose();
   }
 
@@ -67,6 +108,65 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
         curve: Curves.easeInOutCubic,
       );
     }
+  }
+
+  List<JournalPageSpread> _buildJournalSpreads(
+    List<JournalEntryWithDetails> entryList,
+    DeskThemeData deskTheme,
+  ) {
+    final spreads = <JournalPageSpread>[];
+    int pageCounter = 1;
+
+    for (final item in entryList) {
+      final pages = JournalPageContent.fromEntry(item);
+      for (int i = 0; i < pages.length; i += 2) {
+        final leftContent = pages[i].copyWith(pageNumber: pageCounter++);
+        final rightContent = (i + 1 < pages.length)
+            ? pages[i + 1].copyWith(pageNumber: pageCounter++)
+            : JournalPageContent(
+                type: JournalPageType.quoteReflection,
+                entry: item,
+                title: 'Daily Reflection',
+                bodyText:
+                    '“Every page turned preserves a piece of your journey.”',
+                pageNumber: pageCounter++,
+              );
+
+        spreads.add(
+          JournalPageSpread(
+            leftContent: leftContent,
+            rightContent: rightContent,
+            paperColor: deskTheme.paperColor,
+            onTapLeft: () => _pageTurnController.previousPage(),
+            onTapRight: () => _pageTurnController.nextPage(),
+          ),
+        );
+      }
+    }
+
+    if (spreads.isEmpty) {
+      spreads.add(
+        JournalPageSpread(
+          leftContent: const JournalPageContent(
+            type: JournalPageType.textOpening,
+            title: 'Welcome to Chronicle',
+            bodyText:
+                'A quiet place for your thoughts, memories, and stories. Tap the pen to write your first entry.',
+            pageNumber: 1,
+          ),
+          rightContent: const JournalPageContent(
+            type: JournalPageType.quoteReflection,
+            title: 'Daily Reflection',
+            bodyText:
+                '“Write what you cannot say aloud. Small moments build a lifetime of wonder.”',
+            pageNumber: 2,
+          ),
+          paperColor: deskTheme.paperColor,
+        ),
+      );
+    }
+
+    return spreads;
   }
 
   void _showTableOfContents(
@@ -279,7 +379,26 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
 
           Widget readerContent;
 
-          if (_bindingStyle == ReaderBindingStyle.postcard) {
+          if (_bindingStyle == ReaderBindingStyle.physicalStudy) {
+            // Physical Illustrated Notebook in Study Room (Rebecca Mock inspiration)
+            final spreads = _buildJournalSpreads(entries, deskTheme);
+            readerContent = IllustratedStudyEnvironment(
+              isJournalOpen: _isJournalOpen,
+              deskTheme: deskTheme,
+              onTapOutside: () {
+                setState(() => _isJournalOpen = false);
+              },
+              child: JournalBook(
+                spreads: spreads,
+                controller: _pageTurnController,
+                coverColor: deskTheme.coverColor,
+                paperColor: deskTheme.paperColor,
+                initialOpen: _isJournalOpen,
+                onBookOpened: () => setState(() => _isJournalOpen = true),
+                onBookClosed: () => setState(() => _isJournalOpen = false),
+              ),
+            );
+          } else if (_bindingStyle == ReaderBindingStyle.postcard) {
             // Vintage Postcard Mode (Image 1)
             readerContent = Center(
               child: SingleChildScrollView(
@@ -402,6 +521,10 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
                               },
                               itemBuilder: (context) => [
                                 const PopupMenuItem(
+                                  value: ReaderBindingStyle.physicalStudy,
+                                  child: Text('✨ Physical Illustrated Journal'),
+                                ),
+                                const PopupMenuItem(
                                   value: ReaderBindingStyle.ringBinder,
                                   child: Text('📋 Ring Binder Desk (Image 4)'),
                                 ),
@@ -415,8 +538,23 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
                                 ),
                               ],
                             ),
+                            // Orientation Switcher (Landscape Spread vs Portrait)
+                            IconButton(
+                              icon: Icon(
+                                _isLandscape
+                                    ? Icons.screen_lock_rotation_rounded
+                                    : Icons.screen_rotation_rounded,
+                                color: Colors.white,
+                              ),
+                              tooltip: _isLandscape
+                                  ? 'Portrait View'
+                                  : 'Landscape Mode (Physical Book Spread)',
+                              onPressed: _toggleOrientation,
+                            ),
                             // Spread Toggle (Single vs Dual Page)
-                            if (_bindingStyle != ReaderBindingStyle.postcard)
+                            if (_bindingStyle != ReaderBindingStyle.postcard &&
+                                _bindingStyle !=
+                                    ReaderBindingStyle.physicalStudy)
                               IconButton(
                                 icon: Icon(
                                   isWide ? Icons.auto_stories : Icons.menu_book,
@@ -485,9 +623,14 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
                                 color: Colors.white,
                                 size: 20,
                               ),
-                              onPressed: _currentPageIndex > 0
-                                  ? _prevPage
-                                  : null,
+                              onPressed:
+                                  _bindingStyle ==
+                                      ReaderBindingStyle.physicalStudy
+                                  ? (_pageTurnController.currentSpreadIndex > 0
+                                        ? () =>
+                                              _pageTurnController.previousPage()
+                                        : null)
+                                  : (_currentPageIndex > 0 ? _prevPage : null),
                             ),
 
                             // Page Counter & Date Indicator
@@ -495,7 +638,10 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  'Page ${_currentPageIndex + 1} of ${bookPages.length}',
+                                  _bindingStyle ==
+                                          ReaderBindingStyle.physicalStudy
+                                      ? 'Spread ${_pageTurnController.currentSpreadIndex + 1} of ${_buildJournalSpreads(entries, deskTheme).length}'
+                                      : 'Page ${_currentPageIndex + 1} of ${bookPages.length}',
                                   style: const TextStyle(
                                     fontFamily: 'serif',
                                     fontSize: 13,
@@ -539,9 +685,19 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
                                 size: 20,
                               ),
                               onPressed:
-                                  _currentPageIndex < bookPages.length - 1
-                                  ? () => _nextPage(bookPages.length)
-                                  : null,
+                                  _bindingStyle ==
+                                      ReaderBindingStyle.physicalStudy
+                                  ? (_pageTurnController.currentSpreadIndex <
+                                            _buildJournalSpreads(
+                                                  entries,
+                                                  deskTheme,
+                                                ).length -
+                                                1
+                                        ? () => _pageTurnController.nextPage()
+                                        : null)
+                                  : (_currentPageIndex < bookPages.length - 1
+                                        ? () => _nextPage(bookPages.length)
+                                        : null),
                             ),
                           ],
                         ),
