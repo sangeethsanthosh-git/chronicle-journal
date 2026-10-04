@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/study_atmosphere_colors.dart';
 import '../../../core/widgets/paper_background.dart';
 import '../../../domain/models/mood.dart';
+import '../../../features/progression/providers/progression_provider.dart';
 import '../../providers/preferences_provider.dart';
 import '../../providers/statistics_provider.dart';
 
@@ -13,6 +15,8 @@ class InsightsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final prefs = ref.watch(preferencesProvider);
     final stats = ref.watch(statisticsProvider);
+    final progress = ref.watch(userProgressProvider);
+    final achievements = ref.watch(achievementsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return PaperBackground(
@@ -21,13 +25,193 @@ class InsightsScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           title: const Text(
-            'Insights & Statistics',
+            'Sanctuary & Insights',
             style: TextStyle(fontFamily: 'serif', fontWeight: FontWeight.bold),
           ),
         ),
         body: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           children: [
+            // 1. Sanctuary Growth & Thought XP Card
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF2A2219)
+                    : const Color(0xFFFAF4E6),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFC5A059), width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFC5A059),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          'Level ${progress.currentLevel}',
+                          style: const TextStyle(
+                            fontFamily: 'serif',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: Color(0xFF2C1B10),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        progress.sanctuaryTitle,
+                        style: TextStyle(
+                          fontFamily: 'serif',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                          color: isDark
+                              ? AppColors.inkPrimaryDark
+                              : AppColors.inkPrimaryLight,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: progress.levelProgress,
+                      minHeight: 8,
+                      backgroundColor: const Color(0x33C5A059),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        StudyAtmosphereColors.vintageBrass,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${progress.totalXp} Thought XP Earned',
+                        style: TextStyle(
+                          fontFamily: 'serif',
+                          fontSize: 12,
+                          color: isDark
+                              ? AppColors.inkSecondaryDark
+                              : AppColors.inkSecondaryLight,
+                        ),
+                      ),
+                      Text(
+                        '${progress.xpForNextLevel} XP needed for next tier',
+                        style: TextStyle(
+                          fontFamily: 'serif',
+                          fontSize: 12,
+                          color: isDark
+                              ? AppColors.inkMutedDark
+                              : AppColors.inkMutedLight,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // 2. Sanctuary Collectibles Showcase
+            const Text(
+              'Sanctuary Collectibles',
+              style: TextStyle(
+                fontFamily: 'serif',
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 105,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: achievements.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 10),
+                itemBuilder: (context, index) {
+                  final item = achievements[index];
+                  return Container(
+                    width: 130,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: item.isUnlocked
+                          ? (isDark
+                                ? const Color(0xFF33291E)
+                                : const Color(0xFFFFF9ED))
+                          : (isDark
+                                ? const Color(0xFF22201D)
+                                : const Color(0xFFF0EBE0)),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: item.isUnlocked
+                            ? const Color(0xFFD4AF37)
+                            : const Color(0xFF706B63),
+                        width: item.isUnlocked ? 1.5 : 1.0,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          item.isUnlocked ? Icons.verified : Icons.lock_outline,
+                          size: 26,
+                          color: item.isUnlocked
+                              ? const Color(0xFFD4AF37)
+                              : const Color(0xFF88827A),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          item.title,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: 'serif',
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: item.isUnlocked
+                                ? (isDark
+                                      ? AppColors.inkPrimaryDark
+                                      : AppColors.inkPrimaryLight)
+                                : const Color(0xFF88827A),
+                          ),
+                        ),
+                        Text(
+                          item.isUnlocked
+                              ? 'Unlocked'
+                              : '${item.requiredXp} XP',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFF88827A),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 20),
             // Streak Card
             Container(
               padding: const EdgeInsets.all(20),
