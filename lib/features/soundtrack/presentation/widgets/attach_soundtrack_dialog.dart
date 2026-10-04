@@ -309,7 +309,7 @@ class _AttachSoundtrackDialogState
           controller: _manualTitleController,
           decoration: const InputDecoration(
             labelText: 'Song Title *',
-            hintText: 'e.g. Clair de Lune',
+            hintText: 'Enter song title',
             prefixIcon: Icon(Icons.music_note_rounded),
           ),
         ),
@@ -318,7 +318,7 @@ class _AttachSoundtrackDialogState
           controller: _manualArtistController,
           decoration: const InputDecoration(
             labelText: 'Artist Name',
-            hintText: 'e.g. Claude Debussy',
+            hintText: 'Enter artist name',
             prefixIcon: Icon(Icons.person_outline_rounded),
           ),
         ),
@@ -327,7 +327,7 @@ class _AttachSoundtrackDialogState
           controller: _manualAlbumController,
           decoration: const InputDecoration(
             labelText: 'Album or Vinyl Record',
-            hintText: 'e.g. Suite Bergamasque',
+            hintText: 'Enter album name (optional)',
             prefixIcon: Icon(Icons.album_outlined),
           ),
         ),

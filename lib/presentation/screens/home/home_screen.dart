@@ -399,8 +399,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
           const SizedBox(height: 10),
 
-          // 2a. Live Soundtrack Music Banner
-          const NowPlayingMusicBanner(showHintWhenIdle: true),
+          // 2a. Live Soundtrack Music Banner (visible when music is actively playing)
+          const NowPlayingMusicBanner(),
 
           const SizedBox(height: 10),
 

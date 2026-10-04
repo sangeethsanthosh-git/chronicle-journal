@@ -40,6 +40,8 @@ class _NowPlayingMusicBannerState extends ConsumerState<NowPlayingMusicBanner>
   late AnimationController _discRotateController;
   late AnimationController _eqController;
   bool _isMinimized = false;
+  bool _isDismissed = false;
+  String? _lastTrackKey;
 
   @override
   void initState() {
@@ -62,20 +64,8 @@ class _NowPlayingMusicBannerState extends ConsumerState<NowPlayingMusicBanner>
     super.dispose();
   }
 
-  void _trySampleTrack() {
-    final sample = NowPlaying(
-      title: 'Rain & Lo-Fi Vinyl',
-      artist: 'Cozy Study Sanctuary',
-      album: 'Autumn Memories Vol. 1',
-      applicationName: 'Spotify',
-      isPlaying: true,
-      capturedAt: DateTime.now(),
-    );
-    ref.read(simulatedTrackProvider.notifier).setTrack(sample);
-  }
-
   void _dismissTrack() {
-    ref.read(simulatedTrackProvider.notifier).setTrack(null);
+    setState(() => _isDismissed = true);
   }
 
   @override
@@ -88,6 +78,17 @@ class _NowPlayingMusicBannerState extends ConsumerState<NowPlayingMusicBanner>
         return const SizedBox.shrink();
       }
       return _buildIdleMusicHint(context);
+    }
+
+    // Reset dismissal when track changes
+    final currentKey = '${track.title}_${track.artist}';
+    if (_lastTrackKey != currentKey) {
+      _lastTrackKey = currentKey;
+      _isDismissed = false;
+    }
+
+    if (_isDismissed) {
+      return const SizedBox.shrink();
     }
 
     if (_isMinimized) {
@@ -109,17 +110,17 @@ class _NowPlayingMusicBannerState extends ConsumerState<NowPlayingMusicBanner>
           width: 1,
         ),
       ),
-      child: Row(
+      child: const Row(
         children: [
-          const Icon(
+          Icon(
             Icons.music_note_rounded,
             size: 16,
             color: Color(0xFFC5A059),
           ),
-          const SizedBox(width: 8),
-          const Expanded(
+          SizedBox(width: 8),
+          Expanded(
             child: Text(
-              'No music playing • Start Spotify or test soundtrack',
+              'No music currently playing on device',
               style: TextStyle(
                 fontFamily: 'serif',
                 fontSize: 11,
@@ -128,27 +129,6 @@ class _NowPlayingMusicBannerState extends ConsumerState<NowPlayingMusicBanner>
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(width: 6),
-          InkWell(
-            onTap: _trySampleTrack,
-            borderRadius: BorderRadius.circular(6),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: const Color(0xFFC5A059),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Text(
-                'Demo Music',
-                style: TextStyle(
-                  fontFamily: 'serif',
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
             ),
           ),
         ],
@@ -298,7 +278,7 @@ class _NowPlayingMusicBannerState extends ConsumerState<NowPlayingMusicBanner>
                 ),
               ),
               const SizedBox(width: 4),
-              // Close demo or dismiss button
+              // Dismiss banner button
               InkWell(
                 onTap: _dismissTrack,
                 child: const Padding(
