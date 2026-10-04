@@ -474,53 +474,54 @@ class JournalPageWidget extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const SizedBox(height: 12),
         // Vintage Archive Rubber Seal
         const VintageRubberStamp(
           text: 'CHRONICLE ARCHIVE • BESPOKE QUALITY',
           centerText: 'VERIFIED',
-          size: 70,
+          size: 48,
           color: AppColors.postalStampRed,
         ),
 
-        const SizedBox(height: 18),
+        const SizedBox(height: 10),
 
         // Literary Quote
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Text(
             content.quoteText ?? '“Write what you cannot say aloud.”',
             textAlign: TextAlign.center,
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontFamily: 'serif',
-              fontSize: 14,
+              fontSize: 12.5,
               fontStyle: FontStyle.italic,
-              height: 1.6,
+              height: 1.45,
               color: Color(0xFF2A231C),
             ),
           ),
         ),
 
         if (content.quoteAuthor != null) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             '— ${content.quoteAuthor}',
             style: const TextStyle(
               fontFamily: 'serif',
-              fontSize: 10.5,
+              fontSize: 10,
               fontWeight: FontWeight.w600,
               color: Color(0xFF8B8279),
             ),
           ),
         ],
 
-        const Spacer(),
+        const SizedBox(height: 12),
 
         // Washi tape accent on bottom
         WashiTape(
           color: AppColors.washiTapeOchre,
-          width: 80,
-          height: 16,
+          width: 70,
+          height: 14,
           rotationDegrees: -2.0,
         ),
       ],

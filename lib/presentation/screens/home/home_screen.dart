@@ -181,64 +181,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Row(
-          children: [
-            const Text(
-              'CHRONICLE',
-              style: TextStyle(
-                fontFamily: 'serif',
-                fontWeight: FontWeight.w900,
-                fontSize: 22,
-                letterSpacing: 3.0,
-                color: Color(0xFFFAF7EE),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: const Color(0xFFC5A059),
-                borderRadius: BorderRadius.circular(3),
-              ),
-              child: const Text(
-                'VOL. 1',
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'CHRONICLE',
                 style: TextStyle(
                   fontFamily: 'serif',
-                  fontSize: 9,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 1.0,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 20,
+                  letterSpacing: 2.2,
+                  color: Color(0xFFFAF7EE),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFC5A059),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                child: const Text(
+                  'VOL. 1',
+                  style: TextStyle(
+                    fontFamily: 'serif',
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
-          // Desk Background Surface Switcher
-          IconButton(
-            icon: const Icon(Icons.palette_outlined, color: Colors.white),
-            tooltip: 'Change Desk Surface (${deskTheme.name})',
-            onPressed: () => _showDeskThemePicker(context),
-          ),
-          // View Switcher: Ring Binder vs Postcard Rack
-          IconButton(
-            icon: Icon(
-              _deskMode == HomeDeskMode.ringBinder
-                  ? Icons.markunread_mailbox_outlined
-                  : Icons.auto_stories_outlined,
-              color: Colors.white,
-            ),
-            tooltip: _deskMode == HomeDeskMode.ringBinder
-                ? 'Switch to Postcard Rack (Image 1)'
-                : 'Switch to Ring Binder Desk (Image 4)',
-            onPressed: () {
-              setState(() {
-                _deskMode = _deskMode == HomeDeskMode.ringBinder
-                    ? HomeDeskMode.postcardRack
-                    : HomeDeskMode.ringBinder;
-              });
-            },
-          ),
           IconButton(
             icon: const Icon(Icons.auto_stories_rounded, color: Colors.white),
             tooltip: 'Read as Physical Book',
@@ -249,13 +229,63 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             tooltip: 'Search Archive',
             onPressed: () => context.push('/search'),
           ),
-          IconButton(
-            icon: const Icon(
-              Icons.collections_bookmark_outlined,
-              color: Colors.white,
-            ),
-            tooltip: 'Collections',
-            onPressed: () => context.push('/collections'),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
+            tooltip: 'More Options',
+            onSelected: (val) {
+              if (val == 'theme') {
+                _showDeskThemePicker(context);
+              } else if (val == 'mode') {
+                setState(() {
+                  _deskMode = _deskMode == HomeDeskMode.ringBinder
+                      ? HomeDeskMode.postcardRack
+                      : HomeDeskMode.ringBinder;
+                });
+              } else if (val == 'collections') {
+                context.push('/collections');
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'theme',
+                child: Row(
+                  children: [
+                    const Icon(Icons.palette_outlined, size: 18),
+                    const SizedBox(width: 8),
+                    Text('Desk: ${deskTheme.name}'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'mode',
+                child: Row(
+                  children: [
+                    Icon(
+                      _deskMode == HomeDeskMode.ringBinder
+                          ? Icons.markunread_mailbox_outlined
+                          : Icons.auto_stories_outlined,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _deskMode == HomeDeskMode.ringBinder
+                          ? 'Postcard Rack Mode'
+                          : 'Ring Binder Mode',
+                    ),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'collections',
+                child: Row(
+                  children: [
+                    Icon(Icons.collections_bookmark_outlined, size: 18),
+                    SizedBox(width: 8),
+                    Text('Collections'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
