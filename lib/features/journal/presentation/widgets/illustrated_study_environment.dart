@@ -23,7 +23,10 @@ class IllustratedStudyEnvironment extends StatefulWidget {
     required this.deskTheme,
     this.onTapOutside,
     this.onTapBookshelf,
+    this.isTransparentWall = false,
   });
+
+  final bool isTransparentWall;
 
   @override
   State<IllustratedStudyEnvironment> createState() =>
@@ -67,7 +70,10 @@ class _IllustratedStudyEnvironmentState
           children: [
             // 1. Room Background Wall & Window
             CustomPaint(
-              painter: _StudyRoomPainter(deskTheme: widget.deskTheme),
+              painter: _StudyRoomPainter(
+                deskTheme: widget.deskTheme,
+                isTransparent: widget.isTransparentWall,
+              ),
             ),
 
             // 2. Animated Floating Dust Particles in the Lamp Light
@@ -173,20 +179,23 @@ class _IllustratedStudyEnvironmentState
 /// Paints the cozy study room background (wall, bookshelf, and window light)
 class _StudyRoomPainter extends CustomPainter {
   final DeskThemeData deskTheme;
+  final bool isTransparent;
 
-  _StudyRoomPainter({required this.deskTheme});
+  _StudyRoomPainter({required this.deskTheme, this.isTransparent = false});
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Wall wallpaper gradient
-    final wallPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [deskTheme.coverColor.withAlpha(240), deskTheme.deskColor],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+    if (!isTransparent) {
+      // Wall wallpaper gradient
+      final wallPaint = Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [deskTheme.coverColor.withAlpha(240), deskTheme.deskColor],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), wallPaint);
+      canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), wallPaint);
+    }
 
     // Subtle warm window pane on top left
     final windowRect = Rect.fromLTWH(24, 20, 110, 140);

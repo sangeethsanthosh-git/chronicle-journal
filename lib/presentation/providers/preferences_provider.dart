@@ -69,6 +69,24 @@ class PreferencesNotifier extends Notifier<UserPreferences> {
     state = state.copyWith(isMusicIntegrationEnabled: enabled);
     await _repo.setMusicIntegrationEnabled(enabled);
   }
+
+  Future<void> setReaderBackground({
+    required String mode,
+    required String asset,
+    String? customPath,
+  }) async {
+    state = state.copyWith(
+      readerBackgroundMode: mode,
+      readerBackgroundAsset: asset,
+      readerCustomImagePath: customPath,
+      clearCustomImagePath: customPath == null,
+    );
+    await _repo.setReaderBackground(
+      mode: mode,
+      asset: asset,
+      customPath: customPath,
+    );
+  }
 }
 
 final preferencesProvider =

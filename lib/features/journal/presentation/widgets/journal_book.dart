@@ -152,24 +152,38 @@ class _JournalBookState extends State<JournalBook>
                           decoration: BoxDecoration(
                             color: widget.coverColor,
                             borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(90),
+                                blurRadius: 18,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
                             border: Border.all(
-                              color: const Color(0xFFC5A059).withAlpha(80),
-                              width: 1.2,
+                              color: const Color(0xFFC5A059).withAlpha(95),
+                              width: 1.4,
                             ),
                           ),
                         ),
                       ),
 
-                      // 2. Open Journal Pages
+                      // 2. Open Journal Pages (inset 4px for authentic bookbinding squares)
                       if (openProgress > 0.05)
-                        Positioned.fill(
+                        Positioned(
+                          left: 4,
+                          right: 4,
+                          top: 4,
+                          bottom: 4,
                           child: Opacity(
                             opacity:
                                 ((openProgress - 0.05) / 0.95).clamp(0.0, 1.0),
-                            child: PaperPeelPageTurn(
-                              spreads: widget.spreads,
-                              controller: widget.controller,
-                              paperColor: widget.paperColor,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: PaperPeelPageTurn(
+                                spreads: widget.spreads,
+                                controller: widget.controller,
+                                paperColor: widget.paperColor,
+                              ),
                             ),
                           ),
                         ),

@@ -160,3 +160,199 @@ class BookDropShadow extends StatelessWidget {
     );
   }
 }
+
+/// Realistic stacked paper edges indicating hundreds of bound pages
+/// along the outer left and outer right margins of the open physical book.
+class StackedPageEdges extends StatelessWidget {
+  final bool isLeftEdge;
+  final double thickness;
+  final Color paperBaseColor;
+
+  const StackedPageEdges({
+    super.key,
+    required this.isLeftEdge,
+    this.thickness = 7.0,
+    this.paperBaseColor = const Color(0xFFF7F2E4),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Container(
+        width: thickness,
+        decoration: BoxDecoration(
+          color: paperBaseColor,
+          borderRadius: BorderRadius.horizontal(
+            left: isLeftEdge ? const Radius.circular(2) : Radius.zero,
+            right: !isLeftEdge ? const Radius.circular(2) : Radius.zero,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(isLeftEdge ? 35 : 45),
+              blurRadius: 3,
+              offset: Offset(isLeftEdge ? -2 : 2, 0),
+            ),
+          ],
+        ),
+        child: CustomPaint(
+          painter: _StackedPaperLeavesPainter(
+            isLeft: isLeftEdge,
+            baseColor: paperBaseColor,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StackedPaperLeavesPainter extends CustomPainter {
+  final bool isLeft;
+  final Color baseColor;
+
+  _StackedPaperLeavesPainter({required this.isLeft, required this.baseColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+
+    // Outer shade gradient
+    final gradient = LinearGradient(
+      begin: isLeft ? Alignment.centerRight : Alignment.centerLeft,
+      end: isLeft ? Alignment.centerLeft : Alignment.centerRight,
+      colors: [
+        baseColor,
+        baseColor.withAlpha(220),
+        const Color(0xFFDFD4BD),
+        const Color(0xFFC8B89C),
+      ],
+      stops: const [0.0, 0.4, 0.75, 1.0],
+    );
+
+    final paint = Paint()..shader = gradient.createShader(rect);
+    canvas.drawRect(rect, paint);
+
+    // Fine paper stratification lines simulating individual page layers
+    final linePaint = Paint()
+      ..color = const Color(0xFF9E8B70).withAlpha(55)
+      ..strokeWidth = 0.5;
+
+    final step = isLeft ? 1.4 : 1.4;
+    for (double y = 4.0; y < size.height - 4.0; y += step) {
+      canvas.drawLine(
+        Offset(isLeft ? 0.8 : 0.0, y),
+        Offset(isLeft ? size.width : size.width - 0.8, y),
+        linePaint,
+      );
+    }
+
+    // Top and bottom curvature edge shading
+    final cornerShade = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.black.withAlpha(40),
+          Colors.transparent,
+          Colors.transparent,
+          Colors.black.withAlpha(50),
+        ],
+        stops: const [0.0, 0.05, 0.95, 1.0],
+      ).createShader(rect);
+    canvas.drawRect(rect, cornerShade);
+  }
+
+  @override
+  bool shouldRepaint(covariant _StackedPaperLeavesPainter oldDelegate) =>
+      oldDelegate.isLeft != isLeft || oldDelegate.baseColor != baseColor;
+}
+
+/// Realistic spine gutter depth with central thread depression,
+/// woven headband accents, and soft bilateral paper curve shadow.
+class SpineGutter extends StatelessWidget {
+  final double width;
+
+  const SpineGutter({super.key, this.width = 44.0});
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Soft bilateral gradient spreading outward onto left and right pages
+          Container(
+            width: width,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [
+                  Colors.black.withAlpha(45),
+                  Colors.black.withAlpha(18),
+                  Colors.transparent,
+                  Colors.black.withAlpha(18),
+                  Colors.black.withAlpha(45),
+                ],
+                stops: const [0.0, 0.28, 0.5, 0.72, 1.0],
+              ),
+            ),
+          ),
+
+          // Deep center stitch crease
+          Container(
+            width: 5,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.black.withAlpha(75),
+                  Colors.black.withAlpha(130),
+                  Colors.black.withAlpha(75),
+                ],
+              ),
+            ),
+          ),
+
+          // Top woven headband fabric accent
+          Positioned(
+            top: 0,
+            child: Container(
+              width: 14,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFFC5A059),
+                borderRadius: BorderRadius.circular(1.5),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black38,
+                    blurRadius: 2,
+                    offset: Offset(0, 1),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Bottom woven headband fabric accent
+          Positioned(
+            bottom: 0,
+            child: Container(
+              width: 14,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFFC5A059),
+                borderRadius: BorderRadius.circular(1.5),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black38,
+                    blurRadius: 2,
+                    offset: Offset(0, -1),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

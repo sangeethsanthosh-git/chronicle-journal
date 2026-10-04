@@ -16,6 +16,9 @@ class PreferencesRepositoryImpl implements PreferencesRepository {
   static const _keyOnboarding = 'onboarding_completed';
   static const _keyQuotes = 'show_quotes';
   static const _keyMusicIntegration = 'music_integration_enabled';
+  static const _keyReaderBgMode = 'reader_bg_mode';
+  static const _keyReaderBgAsset = 'reader_bg_asset';
+  static const _keyReaderCustomImg = 'reader_custom_img_path';
 
   @override
   Future<UserPreferences> loadPreferences() async {
@@ -45,6 +48,10 @@ class PreferencesRepositoryImpl implements PreferencesRepository {
       isOnboardingCompleted: sp.getBool(_keyOnboarding) ?? false,
       showQuotes: sp.getBool(_keyQuotes) ?? true,
       isMusicIntegrationEnabled: sp.getBool(_keyMusicIntegration) ?? false,
+      readerBackgroundMode: sp.getString(_keyReaderBgMode) ?? 'asset',
+      readerBackgroundAsset:
+          sp.getString(_keyReaderBgAsset) ?? 'assets/botanical_deer.jpg',
+      readerCustomImagePath: sp.getString(_keyReaderCustomImg),
     );
   }
 
@@ -107,5 +114,21 @@ class PreferencesRepositoryImpl implements PreferencesRepository {
   Future<void> setMusicIntegrationEnabled(bool enabled) async {
     final sp = await SharedPreferences.getInstance();
     await sp.setBool(_keyMusicIntegration, enabled);
+  }
+
+  @override
+  Future<void> setReaderBackground({
+    required String mode,
+    required String asset,
+    String? customPath,
+  }) async {
+    final sp = await SharedPreferences.getInstance();
+    await sp.setString(_keyReaderBgMode, mode);
+    await sp.setString(_keyReaderBgAsset, asset);
+    if (customPath != null) {
+      await sp.setString(_keyReaderCustomImg, customPath);
+    } else {
+      await sp.remove(_keyReaderCustomImg);
+    }
   }
 }

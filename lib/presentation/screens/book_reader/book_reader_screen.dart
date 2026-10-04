@@ -9,7 +9,6 @@ import '../../../core/utils/pdf_exporter.dart';
 import '../../../core/widgets/book_spread_frame.dart';
 import '../../../core/widgets/desk_background.dart';
 import '../../../core/widgets/ring_binder_frame.dart';
-import '../../../core/widgets/vintage_postcard_widget.dart';
 import '../../../domain/models/journal_entry_with_details.dart';
 import '../../../features/journal/presentation/widgets/illustrated_study_environment.dart';
 import '../../../features/journal/presentation/widgets/journal_book.dart';
@@ -22,10 +21,13 @@ import '../../../features/journal_reader/presentation/widgets/codex_photo_dossie
 import '../../../features/journal_reader/presentation/widgets/codex_tab_header.dart';
 import '../../providers/desk_theme_provider.dart';
 import '../../providers/journal_providers.dart';
+import '../../providers/preferences_provider.dart';
 import '../../providers/statistics_provider.dart';
-import 'book_3d_page_view.dart';
 import 'book_page_data.dart';
 import '../../../features/soundtrack/presentation/widgets/now_playing_music_banner.dart';
+import '../../../features/journal/presentation/widgets/paper_peel_engine.dart';
+import '../../../core/widgets/reader_atmosphere_background.dart';
+import 'package:image_picker/image_picker.dart';
 
 enum ReaderBindingStyle {
   gameCodex,
@@ -193,6 +195,312 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
     }
 
     return spreads;
+  }
+
+  List<JournalPageSpread> _buildPostcardSpreads(
+    List<JournalEntryWithDetails> entries,
+    DeskThemeData deskTheme,
+  ) {
+    final spreads = <JournalPageSpread>[];
+    var pageCounter = 1;
+
+    for (final item in entries) {
+      final photoUri = item.photoAttachments.isNotEmpty
+          ? item.photoAttachments.first.uri
+          : null;
+
+      final leftContent = JournalPageContent(
+        type: photoUri != null
+            ? JournalPageType.photoMemories
+            : JournalPageType.quoteReflection,
+        entry: item,
+        title: item.entry.locationName ?? 'Vintage Postcard',
+        bodyText:
+            item.entry.title.isNotEmpty ? item.entry.title : 'Captured Memory',
+        photoPaths: photoUri != null ? [photoUri] : const [],
+        pageNumber: pageCounter++,
+      );
+
+      final rightContent = JournalPageContent(
+        type: JournalPageType.textOpening,
+        entry: item,
+        title: 'Post Card • ${item.entry.locationName ?? "Miora Post"}',
+        bodyText: item.entry.content.isNotEmpty
+            ? item.entry.content
+            : 'A silent memory etched into time.',
+        pageNumber: pageCounter++,
+      );
+
+      spreads.add(
+        JournalPageSpread(
+          leftContent: leftContent,
+          rightContent: rightContent,
+          paperColor: const Color(0xFFFBF7EE),
+          onTapLeft: () => _pageTurnController.previousPage(),
+          onTapRight: () => _pageTurnController.nextPage(),
+        ),
+      );
+    }
+
+    if (spreads.isEmpty) {
+      spreads.add(
+        JournalPageSpread(
+          leftContent: const JournalPageContent(
+            type: JournalPageType.textOpening,
+            title: 'Postcard Memory',
+            bodyText: 'Your thoughts. Your moments. Your story.',
+            pageNumber: 1,
+          ),
+          rightContent: const JournalPageContent(
+            type: JournalPageType.quoteReflection,
+            title: 'Miora Post',
+            bodyText:
+                '“Every postcard carries the warmth of where you have been.”',
+            pageNumber: 2,
+          ),
+          paperColor: const Color(0xFFFBF7EE),
+        ),
+      );
+    }
+
+    return spreads;
+  }
+
+  void _showWallpaperPicker(BuildContext context) {
+    final prefs = ref.read(preferencesProvider);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFFFBF8EE),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '🖼️ Reader Atmosphere & Backdrop',
+                      style: TextStyle(
+                        fontFamily: 'serif',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Color(0xFF2C241E),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Customize the visual world behind your physical journal.',
+                  style: TextStyle(fontSize: 12, color: Colors.black54),
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  height: 135,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      ...kReaderPresetWallpapers.map((opt) {
+                        final isSelected =
+                            prefs.readerBackgroundMode == 'asset' &&
+                                prefs.readerBackgroundAsset == opt.assetPath;
+                        return GestureDetector(
+                          onTap: () {
+                            ref
+                                .read(preferencesProvider.notifier)
+                                .setReaderBackground(
+                                  mode: 'asset',
+                                  asset: opt.assetPath,
+                                );
+                            Navigator.pop(context);
+                          },
+                          child: Container(
+                            width: 110,
+                            margin: const EdgeInsets.only(right: 10),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isSelected
+                                    ? const Color(0xFFC5A059)
+                                    : Colors.black12,
+                                width: isSelected ? 2.5 : 1.0,
+                              ),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  Image.asset(opt.assetPath, fit: BoxFit.cover),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          Colors.transparent,
+                                          Colors.black.withAlpha(190),
+                                        ],
+                                        stops: const [0.4, 1.0],
+                                      ),
+                                    ),
+                                  ),
+                                  if (isSelected)
+                                    const Positioned(
+                                      top: 4,
+                                      right: 4,
+                                      child: Icon(
+                                        Icons.check_circle,
+                                        color: Color(0xFFC5A059),
+                                        size: 18,
+                                      ),
+                                    ),
+                                  Positioned(
+                                    left: 6,
+                                    right: 6,
+                                    bottom: 6,
+                                    child: Text(
+                                      opt.title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontFamily: 'serif',
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                      // Gallery Button
+                      GestureDetector(
+                        onTap: () async {
+                          final picker = ImagePicker();
+                          final picked = await picker.pickImage(
+                            source: ImageSource.gallery,
+                          );
+                          if (picked != null) {
+                            ref
+                                .read(preferencesProvider.notifier)
+                                .setReaderBackground(
+                                  mode: 'custom',
+                                  asset: picked.path,
+                                  customPath: picked.path,
+                                );
+                            if (context.mounted) Navigator.pop(context);
+                          }
+                        },
+                        child: Container(
+                          width: 110,
+                          margin: const EdgeInsets.only(right: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2C241E),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: prefs.readerBackgroundMode == 'custom'
+                                  ? const Color(0xFFC5A059)
+                                  : Colors.black12,
+                              width: prefs.readerBackgroundMode == 'custom'
+                                  ? 2.5
+                                  : 1.0,
+                            ),
+                          ),
+                          child: const Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.add_photo_alternate_rounded,
+                                  color: Color(0xFFC5A059),
+                                  size: 26,
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Gallery',
+                                  style: TextStyle(
+                                    fontFamily: 'serif',
+                                    fontSize: 11,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Desk Wood Button
+                      GestureDetector(
+                        onTap: () {
+                          ref
+                              .read(preferencesProvider.notifier)
+                              .setReaderBackground(
+                                mode: 'desk',
+                                asset: 'assets/botanical_deer.jpg',
+                              );
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                          width: 110,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF382315),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: prefs.readerBackgroundMode == 'desk'
+                                  ? const Color(0xFFC5A059)
+                                  : Colors.black12,
+                              width: prefs.readerBackgroundMode == 'desk'
+                                  ? 2.5
+                                  : 1.0,
+                            ),
+                          ),
+                          child: const Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.table_restaurant_rounded,
+                                  color: Color(0xFFC5A059),
+                                  size: 26,
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Desk Wood',
+                                  style: TextStyle(
+                                    fontFamily: 'serif',
+                                    fontSize: 11,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _showTableOfContents(
@@ -395,6 +703,7 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
             if (match.isNotEmpty) activeEntry = match.first;
           }
 
+          final prefs = ref.watch(preferencesProvider);
           final deskThemeType = ref.watch(deskThemeProvider);
           final deskTheme = DeskThemeData.getTheme(deskThemeType);
 
@@ -467,6 +776,7 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
             readerContent = IllustratedStudyEnvironment(
               isJournalOpen: _isJournalOpen,
               deskTheme: deskTheme,
+              isTransparentWall: prefs.readerBackgroundMode != 'desk',
               onTapOutside: () {
                 setState(() => _isJournalOpen = false);
               },
@@ -482,60 +792,72 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
               ),
             );
           } else if (_bindingStyle == ReaderBindingStyle.postcard) {
-            // Vintage Postcard Mode (Image 1)
+            // Vintage Postcard Mode with Unified Paper Peel Animation
+            final postcardSpreads = _buildPostcardSpreads(entries, deskTheme);
             readerContent = Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.only(top: 60, bottom: 80),
-                child: VintagePostcardWidget(
-                  imagePath: activeEntry.photoAttachments.isNotEmpty
-                      ? activeEntry.photoAttachments.first.uri
-                      : null,
-                  message: activeEntry.entry.content,
-                  date: activeEntry.entry.entryDate,
-                  location: activeEntry.entry.locationName ?? 'MIORA POST',
-                  recipient: 'To: Dear Future Self',
+              child: AspectRatio(
+                aspectRatio: 16 / 10.5,
+                child: Container(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(120),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: PaperPeelPageTurn(
+                      spreads: postcardSpreads,
+                      controller: _pageTurnController,
+                      paperColor: const Color(0xFFFBF7EE),
+                    ),
+                  ),
                 ),
               ),
             );
           } else if (_bindingStyle == ReaderBindingStyle.ringBinder) {
-            // Ring Binder Journal on Selected Desk Surface
+            // Ring Binder Journal with Unified Paper Peel Animation
+            final spreads = _buildJournalSpreads(entries, deskTheme);
             readerContent = RingBinderFrame(
               deskColor: deskTheme.deskColor,
               paperColor: deskTheme.paperColor,
               isDualSpread: isWide,
               reminderQuote: 'reminder: progress matters more than perfection.',
-              child: Book3DPageView(
-                pages: bookPages,
-                controller: _pageController,
-                isDualSpread: isWide,
-                onPageChanged: (idx) {
-                  setState(() => _currentPageIndex = idx);
-                },
+              child: PaperPeelPageTurn(
+                spreads: spreads,
+                controller: _pageTurnController,
+                paperColor: deskTheme.paperColor,
               ),
             );
           } else {
-            // Classic Leather Hardcover on Wood Desk
-            readerContent = DeskBackground(
+            // Classic Leather Hardcover with Unified Paper Peel Animation
+            final spreads = _buildJournalSpreads(entries, deskTheme);
+            readerContent = Center(
               child: BookSpreadFrame(
                 isDualSpread: isWide,
-                isLeftPage: _currentPageIndex % 2 == 0,
-                child: Book3DPageView(
-                  pages: bookPages,
-                  controller: _pageController,
-                  isDualSpread: isWide,
-                  onPageChanged: (idx) {
-                    setState(() => _currentPageIndex = idx);
-                  },
+                coverColor: deskTheme.coverColor,
+                paperColor: deskTheme.paperColor,
+                child: PaperPeelPageTurn(
+                  spreads: spreads,
+                  controller: _pageTurnController,
+                  paperColor: deskTheme.paperColor,
                 ),
               ),
             );
           }
 
           final isPageTurnStyle =
-              _bindingStyle == ReaderBindingStyle.physicalStudy ||
-                  (_bindingStyle == ReaderBindingStyle.gameCodex &&
-                      _codexTab == CodexTab.story);
-          final currentSpreads = _buildJournalSpreads(entries, deskTheme);
+              !(_bindingStyle == ReaderBindingStyle.gameCodex &&
+                  _codexTab != CodexTab.story);
+          final currentSpreads = _bindingStyle == ReaderBindingStyle.postcard
+              ? _buildPostcardSpreads(entries, deskTheme)
+              : _buildJournalSpreads(entries, deskTheme);
 
           return PopScope(
             canPop: true,
@@ -549,16 +871,19 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
               }
             },
             child: Scaffold(
-              backgroundColor: _bindingStyle == ReaderBindingStyle.ringBinder
-                  ? deskTheme.deskColor
-                  : deskTheme.coverColor,
+              backgroundColor: Colors.transparent,
               body: SafeArea(
-                child: Stack(
-                  children: [
-                    // The Reader Workspace (Directly accessible without tap-eating blocker)
-                    Positioned.fill(
-                      child: readerContent,
-                    ),
+                child: ReaderAtmosphereBackground(
+                  mode: prefs.readerBackgroundMode,
+                  assetPath: prefs.readerBackgroundAsset,
+                  customImagePath: prefs.readerCustomImagePath,
+                  deskFallbackColor: deskTheme.deskColor,
+                  child: Stack(
+                    children: [
+                      // The Reader Workspace
+                      Positioned.fill(
+                        child: readerContent,
+                      ),
 
                     // 1. Permanent Floating Back Button (ALWAYS accessible on screen)
                     Positioned(
@@ -674,6 +999,16 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
                                     child: Text('✉️ Vintage Postcard (Image 1)'),
                                   ),
                                 ],
+                              ),
+                              // Wallpaper & Atmosphere Backdrop Switcher
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.wallpaper_rounded,
+                                  color: Color(0xFFC5A059),
+                                  size: 20,
+                                ),
+                                tooltip: 'Change Reader Atmosphere',
+                                onPressed: () => _showWallpaperPicker(context),
                               ),
                               // Orientation Switcher (Landscape Spread vs Portrait)
                               IconButton(
@@ -896,8 +1231,9 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
                 ),
               ),
             ),
-          );
-        },
+          ),
+        );
+      },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(child: Text('Error loading journal: $err')),
       ),

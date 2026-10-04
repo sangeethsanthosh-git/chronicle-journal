@@ -142,28 +142,50 @@ class _PaperPeelPageTurnState extends State<PaperPeelPageTurn>
                       pageHeight: fullHeight,
                     ),
 
-                  // 2. Spine Crease & Shadow
+                  // 2. Realistic Stacked Page Edges (left & right book sides)
                   Positioned(
-                    left: halfWidth - 18,
+                    left: 0,
                     top: 0,
                     bottom: 0,
-                    width: 36,
-                    child: const SpineShadow(),
+                    child: StackedPageEdges(
+                      isLeftEdge: true,
+                      thickness: 6,
+                      paperBaseColor: widget.paperColor,
+                    ),
+                  ),
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: StackedPageEdges(
+                      isLeftEdge: false,
+                      thickness: 6,
+                      paperBaseColor: widget.paperColor,
+                    ),
                   ),
 
-                  // 3. Tactile Corner Dog-Ear Peel Hints when resting
+                  // 3. Deep Spine Crease Gutter & Bilateral Shadow
+                  Positioned(
+                    left: halfWidth - 22,
+                    top: 0,
+                    bottom: 0,
+                    width: 44,
+                    child: const SpineGutter(),
+                  ),
+
+                  // 4. Tactile Corner Dog-Ear Peel Hints when resting
                   if (!isTurning) ...[
                     // Right page corner peel hint (touch here to peel forward)
                     if (widget.controller.canTurnForward)
                       Positioned(
-                        right: 4,
+                        right: 6,
                         bottom: 4,
                         child: _buildDogEarPeelAffordance(isRight: true),
                       ),
                     // Left page corner peel hint (touch here to peel backward)
                     if (widget.controller.canTurnBackward)
                       Positioned(
-                        left: 4,
+                        left: 6,
                         bottom: 4,
                         child: _buildDogEarPeelAffordance(isRight: false),
                       ),

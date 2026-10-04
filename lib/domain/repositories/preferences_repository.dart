@@ -14,6 +14,9 @@ class UserPreferences {
   final bool isOnboardingCompleted;
   final bool showQuotes;
   final bool isMusicIntegrationEnabled;
+  final String readerBackgroundMode; // 'asset', 'custom', 'desk'
+  final String readerBackgroundAsset; // e.g. 'assets/botanical_deer.jpg'
+  final String? readerCustomImagePath;
 
   const UserPreferences({
     this.themeMode = ThemeMode.system,
@@ -27,6 +30,9 @@ class UserPreferences {
     this.isOnboardingCompleted = false,
     this.showQuotes = true,
     this.isMusicIntegrationEnabled = false,
+    this.readerBackgroundMode = 'asset',
+    this.readerBackgroundAsset = 'assets/botanical_deer.jpg',
+    this.readerCustomImagePath,
   });
 
   UserPreferences copyWith({
@@ -41,6 +47,10 @@ class UserPreferences {
     bool? isOnboardingCompleted,
     bool? showQuotes,
     bool? isMusicIntegrationEnabled,
+    String? readerBackgroundMode,
+    String? readerBackgroundAsset,
+    String? readerCustomImagePath,
+    bool clearCustomImagePath = false,
   }) {
     return UserPreferences(
       themeMode: themeMode ?? this.themeMode,
@@ -56,6 +66,12 @@ class UserPreferences {
       showQuotes: showQuotes ?? this.showQuotes,
       isMusicIntegrationEnabled:
           isMusicIntegrationEnabled ?? this.isMusicIntegrationEnabled,
+      readerBackgroundMode: readerBackgroundMode ?? this.readerBackgroundMode,
+      readerBackgroundAsset:
+          readerBackgroundAsset ?? this.readerBackgroundAsset,
+      readerCustomImagePath: clearCustomImagePath
+          ? null
+          : (readerCustomImagePath ?? this.readerCustomImagePath),
     );
   }
 }
@@ -72,4 +88,9 @@ abstract class PreferencesRepository {
   Future<void> setOnboardingCompleted(bool completed);
   Future<void> setShowQuotes(bool show);
   Future<void> setMusicIntegrationEnabled(bool enabled);
+  Future<void> setReaderBackground({
+    required String mode,
+    required String asset,
+    String? customPath,
+  });
 }
