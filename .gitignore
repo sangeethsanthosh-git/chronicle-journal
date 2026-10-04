@@ -51,4 +51,6 @@ key.properties
 local.properties
 *.apk
 *.aab
+.kotlin/
+android/.kotlin/
 
