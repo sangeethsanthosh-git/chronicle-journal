@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/desk_theme.dart';
 import '../../../core/utils/backup_service.dart';
 import '../../../core/utils/notification_service.dart';
 import '../../../core/utils/pdf_exporter.dart';
@@ -9,6 +10,7 @@ import '../../../core/widgets/paper_background.dart';
 import '../../../domain/models/journal_layout.dart';
 import '../../../domain/models/paper_style.dart';
 import '../../providers/database_provider.dart';
+import '../../providers/desk_theme_provider.dart';
 import '../../providers/preferences_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -69,6 +71,70 @@ class SettingsScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
+                  ),
+                  const Divider(height: 1),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final deskThemeType = ref.watch(deskThemeProvider);
+                      final deskTheme = DeskThemeData.getTheme(deskThemeType);
+                      return ListTile(
+                        leading: Container(
+                          width: 26,
+                          height: 26,
+                          decoration: BoxDecoration(
+                            color: deskTheme.deskColor,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: const Color(0xFFC5A059),
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                        title: const Text(
+                          'Desk & Study Environment',
+                          style: TextStyle(fontFamily: 'serif'),
+                        ),
+                        subtitle: Text(
+                          '${deskTheme.name} • ${deskTheme.description}',
+                          style: const TextStyle(fontSize: 11),
+                        ),
+                        trailing: DropdownButton<DeskThemeType>(
+                          value: deskThemeType,
+                          underline: const SizedBox.shrink(),
+                          onChanged: (theme) {
+                            if (theme != null) {
+                              ref
+                                  .read(deskThemeProvider.notifier)
+                                  .setTheme(theme);
+                            }
+                          },
+                          items: DeskThemeType.values.map((t) {
+                            final data = DeskThemeData.getTheme(t);
+                            return DropdownMenuItem(
+                              value: t,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 14,
+                                    height: 14,
+                                    margin: const EdgeInsets.only(right: 8),
+                                    decoration: BoxDecoration(
+                                      color: data.deskColor,
+                                      borderRadius: BorderRadius.circular(3),
+                                    ),
+                                  ),
+                                  Text(
+                                    data.name,
+                                    style: const TextStyle(fontSize: 13),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      );
+                    },
                   ),
                   const Divider(height: 1),
                   ListTile(

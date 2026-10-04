@@ -15,6 +15,8 @@ class VintagePostcardWidget extends StatelessWidget {
   final DateTime date;
   final String location;
   final String? recipient;
+  final bool isEditable;
+  final VoidCallback? onEdit;
   final VoidCallback? onTap;
 
   const VintagePostcardWidget({
@@ -24,6 +26,8 @@ class VintagePostcardWidget extends StatelessWidget {
     required this.date,
     this.location = 'CHRONICLE POST',
     this.recipient = 'To: Dear Future Self',
+    this.isEditable = false,
+    this.onEdit,
     this.onTap,
   });
 
@@ -206,50 +210,69 @@ class VintagePostcardWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Centered "POST CARD" vintage typography header
-          Center(
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+          // Centered "POST CARD" vintage typography header with optional Edit button
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Center(
+                child: Column(
                   children: [
-                    Container(
-                      width: 24,
-                      height: 1,
-                      color: const Color(0xFF9E9282),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 24,
+                          height: 1,
+                          color: const Color(0xFF9E9282),
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'POST CARD',
+                          style: TextStyle(
+                            fontFamily: 'serif',
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 4.0,
+                            color: Color(0xFF2C2621),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 24,
+                          height: 1,
+                          color: const Color(0xFF9E9282),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'POST CARD',
+                    const SizedBox(height: 1),
+                    Text(
+                      'UNIVERSAL POSTAL UNION • CARTE POSTALE',
                       style: TextStyle(
                         fontFamily: 'serif',
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 4.0,
-                        color: Color(0xFF2C2621),
+                        fontSize: 7.5,
+                        letterSpacing: 1.5,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF8A7F73),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 24,
-                      height: 1,
-                      color: const Color(0xFF9E9282),
                     ),
                   ],
                 ),
-                const SizedBox(height: 1),
-                Text(
-                  'UNIVERSAL POSTAL UNION • CARTE POSTALE',
-                  style: TextStyle(
-                    fontFamily: 'serif',
-                    fontSize: 7.5,
-                    letterSpacing: 1.5,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF8A7F73),
+              ),
+              if (isEditable || onEdit != null)
+                Positioned(
+                  right: 0,
+                  top: -8,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.edit_note_rounded,
+                      size: 22,
+                      color: Color(0xFF8B2635),
+                    ),
+                    tooltip: 'Edit Postcard',
+                    onPressed: onEdit,
                   ),
                 ),
-              ],
-            ),
+            ],
           ),
 
           const SizedBox(height: 12),

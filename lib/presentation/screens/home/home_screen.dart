@@ -4,15 +4,19 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/desk_theme.dart';
 import '../../../core/widgets/cassette_tape_widget.dart';
 import '../../../core/widgets/mood_badge.dart';
 import '../../../core/widgets/polaroid_card.dart';
+import '../../../core/widgets/postcard_editor_dialog.dart';
 import '../../../core/widgets/postal_stamp.dart';
 import '../../../core/widgets/ring_binder_frame.dart';
 import '../../../core/widgets/torn_paper_card.dart';
 import '../../../core/widgets/vintage_postcard_widget.dart';
 import '../../../core/widgets/vintage_rubber_stamp.dart';
 import '../../../core/widgets/washi_tape.dart';
+import '../../providers/database_provider.dart';
+import '../../providers/desk_theme_provider.dart';
 import '../../providers/journal_providers.dart';
 import '../../providers/memories_provider.dart';
 import '../../providers/statistics_provider.dart';
@@ -58,8 +62,114 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
   }
 
+  void _showDeskThemePicker(BuildContext context) {
+    final currentTheme = ref.read(deskThemeProvider);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFFFBF8EE),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '🎨 Select Desk Surface',
+                      style: TextStyle(
+                        fontFamily: 'serif',
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2C2621),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const Divider(color: Color(0xFFDED6C4)),
+                const SizedBox(height: 6),
+                ...DeskThemeType.values.map((themeType) {
+                  final themeData = DeskThemeData.getTheme(themeType);
+                  final isSelected = themeType == currentTheme;
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    leading: Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: themeData.deskColor,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isSelected
+                              ? const Color(0xFFC5A059)
+                              : Colors.black26,
+                          width: isSelected ? 2.5 : 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(40),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                    ),
+                    title: Text(
+                      themeData.name,
+                      style: TextStyle(
+                        fontFamily: 'serif',
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.w600,
+                        color: const Color(0xFF2C2621),
+                      ),
+                    ),
+                    subtitle: Text(
+                      themeData.description,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontFamily: 'serif',
+                        color: Color(0xFF6E655F),
+                      ),
+                    ),
+                    trailing: isSelected
+                        ? const Icon(
+                            Icons.check_circle,
+                            color: Color(0xFFC5A059),
+                          )
+                        : null,
+                    onTap: () {
+                      ref.read(deskThemeProvider.notifier).setTheme(themeType);
+                      Navigator.pop(context);
+                    },
+                  );
+                }),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final deskThemeType = ref.watch(deskThemeProvider);
+    final deskTheme = DeskThemeData.getTheme(deskThemeType);
     final todayEntry = ref.watch(todayEntryProvider);
     final stats = ref.watch(statisticsProvider);
     final memories = ref.watch(memoriesProvider);
@@ -67,7 +177,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final activeQuote = _deskQuotes[_quoteIndex];
 
     return Scaffold(
-      backgroundColor: const Color(0xFF384756), // Slate blue desk (Image 4)
+      backgroundColor: deskTheme.deskColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -104,6 +214,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
         ),
         actions: [
+          // Desk Background Surface Switcher
+          IconButton(
+            icon: const Icon(Icons.palette_outlined, color: Colors.white),
+            tooltip: 'Change Desk Surface (${deskTheme.name})',
+            onPressed: () => _showDeskThemePicker(context),
+          ),
           // View Switcher: Ring Binder vs Postcard Rack
           IconButton(
             icon: Icon(
@@ -145,6 +261,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       body: _deskMode == HomeDeskMode.ringBinder
           ? RingBinderFrame(
+              deskColor: deskTheme.deskColor,
+              paperColor: deskTheme.paperColor,
               reminderQuote: activeQuote,
               onReminderTap: _cycleQuote,
               isDualSpread: false,
@@ -856,6 +974,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           date: entry.entryDate,
           location: entry.locationName ?? 'CHRONICLE POST',
           recipient: 'To: Dear Future Self',
+          isEditable: true,
+          onEdit: () {
+            PostcardEditorDialog.show(
+              context,
+              initialData: PostcardCustomizationData(
+                message: entry.content,
+                recipient: 'To: Dear Future Self',
+                location: entry.locationName ?? 'CHRONICLE POST',
+                date: entry.entryDate,
+                imagePath: photoPath,
+              ),
+              onSave: (customized) async {
+                final repo = ref.read(journalRepositoryProvider);
+                await repo.saveEntry(
+                  id: entry.id,
+                  title: entry.title,
+                  content: customized.message,
+                  entryDate: entry.entryDate,
+                  mood: entry.mood,
+                  moodIntensity: entry.moodIntensity,
+                  isFavorite: entry.isFavorite,
+                  locationName: customized.location,
+                  latitude: entry.latitude,
+                  longitude: entry.longitude,
+                  weatherSummary: entry.weatherSummary,
+                  weatherTemperature: entry.weatherTemperature,
+                  coverImageUri: entry.coverImageUri,
+                  layout: entry.layout,
+                  paperStyle: entry.paperStyle,
+                  tagIds: item.tags.map((t) => t.id).toList(),
+                  photoPaths: item.photoAttachments.map((a) => a.uri).toList(),
+                  audioPaths: item.audioAttachments.map((a) => a.uri).toList(),
+                );
+                ref.invalidate(allEntriesStreamProvider);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('✉️ Postcard updated & preserved!'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
+              },
+            );
+          },
           onTap: () => context.push('/entry/${entry.id}'),
         );
       },

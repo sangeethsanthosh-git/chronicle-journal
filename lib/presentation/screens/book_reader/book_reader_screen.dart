@@ -3,11 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/theme/desk_theme.dart';
+import '../../../core/utils/pdf_exporter.dart';
 import '../../../core/widgets/book_spread_frame.dart';
 import '../../../core/widgets/desk_background.dart';
 import '../../../core/widgets/ring_binder_frame.dart';
 import '../../../core/widgets/vintage_postcard_widget.dart';
 import '../../../domain/models/journal_entry_with_details.dart';
+import '../../providers/desk_theme_provider.dart';
 import '../../providers/journal_providers.dart';
 import 'book_3d_page_view.dart';
 import 'book_page_data.dart';
@@ -266,6 +269,9 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
             if (match.isNotEmpty) activeEntry = match.first;
           }
 
+          final deskThemeType = ref.watch(deskThemeProvider);
+          final deskTheme = DeskThemeData.getTheme(deskThemeType);
+
           // Paginate active entry into physical book pages
           final bookPages = BookPaginator.paginate(activeEntry);
           final screenWidth = MediaQuery.of(context).size.width;
@@ -290,8 +296,10 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
               ),
             );
           } else if (_bindingStyle == ReaderBindingStyle.ringBinder) {
-            // Ring Binder Journal on Slate Blue Desk (Image 4)
+            // Ring Binder Journal on Selected Desk Surface
             readerContent = RingBinderFrame(
+              deskColor: deskTheme.deskColor,
+              paperColor: deskTheme.paperColor,
               isDualSpread: isWide,
               reminderQuote: 'reminder: progress matters more than perfection.',
               child: Book3DPageView(
@@ -323,8 +331,8 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
 
           return Scaffold(
             backgroundColor: _bindingStyle == ReaderBindingStyle.ringBinder
-                ? const Color(0xFF384756)
-                : const Color(0xFF2C1B10),
+                ? deskTheme.deskColor
+                : deskTheme.coverColor,
             body: SafeArea(
               child: Stack(
                 children: [
@@ -437,6 +445,16 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
                                 entries,
                                 bookPages,
                               ),
+                            ),
+                            // Export to PDF (Exact Scrapbook & Journal replication)
+                            IconButton(
+                              icon: const Icon(
+                                Icons.picture_as_pdf_outlined,
+                                color: Colors.white,
+                              ),
+                              tooltip: 'Export Journal Book as PDF',
+                              onPressed: () =>
+                                  PdfExporter.exportEntriesToPdf([activeEntry]),
                             ),
                           ],
                         ),
