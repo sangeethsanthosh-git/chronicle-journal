@@ -80,6 +80,11 @@ class EntryDetailScreen extends ConsumerWidget {
               ),
               actions: [
                 IconButton(
+                  icon: const Icon(Icons.auto_stories_rounded),
+                  tooltip: 'Read as Physical Book',
+                  onPressed: () => context.push('/book-reader?id=${entry.id}'),
+                ),
+                IconButton(
                   icon: Icon(
                     entry.isFavorite
                         ? Icons.star_rounded
@@ -124,6 +129,64 @@ class EntryDetailScreen extends ConsumerWidget {
             body: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               children: [
+                // Book Reading Mode Banner
+                InkWell(
+                  onTap: () => context.push('/book-reader?id=${entry.id}'),
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFC5A059).withAlpha(35),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: const Color(0xFFC5A059).withAlpha(120),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.auto_stories_rounded,
+                          color: Color(0xFFC5A059),
+                          size: 22,
+                        ),
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Read as Physical Book',
+                                style: TextStyle(
+                                  fontFamily: 'serif',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              Text(
+                                'Turn pages with realistic 3D paper curl',
+                                style: TextStyle(
+                                  fontFamily: 'serif',
+                                  fontSize: 11,
+                                  color: Color(0xFF7A6D60),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 14,
+                          color: Color(0xFFC5A059),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
                 // Top Stamps & Mood
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

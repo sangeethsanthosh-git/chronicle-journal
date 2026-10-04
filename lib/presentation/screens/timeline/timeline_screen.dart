@@ -30,6 +30,11 @@ class TimelineScreen extends ConsumerWidget {
             style: TextStyle(fontFamily: 'serif', fontWeight: FontWeight.bold),
           ),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.auto_stories_rounded),
+              tooltip: 'Read Journal as Book',
+              onPressed: () => context.push('/book-reader'),
+            ),
             // Layout switcher button
             PopupMenuButton<JournalLayout>(
               icon: const Icon(Icons.style_outlined),

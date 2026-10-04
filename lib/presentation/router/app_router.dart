@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/preferences_provider.dart';
+import '../screens/book_reader/book_reader_screen.dart';
 import '../screens/calendar/calendar_screen.dart';
 import '../screens/collections/collection_detail_screen.dart';
 import '../screens/collections/collections_screen.dart';
@@ -96,6 +97,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final id = state.pathParameters['id']!;
           return EntryDetailScreen(entryId: id);
+        },
+      ),
+      GoRoute(
+        path: '/book-reader',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final id = state.uri.queryParameters['id'];
+          return BookReaderScreen(entryId: id);
+        },
+      ),
+      GoRoute(
+        path: '/book-reader/:id',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final id = state.pathParameters['id'];
+          return BookReaderScreen(entryId: id);
         },
       ),
       GoRoute(

@@ -255,7 +255,53 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     }
 
     if (mounted) {
-      context.pop();
+      // Open the journal entry directly into Book Reading mode with 3D page flip animation
+      context.pushReplacement('/book-reader?id=$_id');
+    }
+  }
+
+  Future<void> _readInBookMode() async {
+    final content = _contentController.text.trim();
+    final title = _titleController.text.trim();
+    if (content.isEmpty && title.isEmpty && _photoPaths.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Write something before opening in Book Mode.'),
+        ),
+      );
+      return;
+    }
+
+    final repo = ref.read(journalRepositoryProvider);
+    await repo.saveEntry(
+      id: _id,
+      title: title,
+      content: content,
+      entryDate: _entryDate,
+      mood: _selectedMood.type.name,
+      moodIntensity: _moodIntensity,
+      isFavorite: _isFavorite,
+      locationName: _locationName,
+      latitude: _latitude,
+      longitude: _longitude,
+      weatherSummary: _weatherSummary,
+      weatherTemperature: _weatherTemperature,
+      coverImageUri: _photoPaths.isNotEmpty ? _photoPaths.first : null,
+      layout: _layout.name,
+      paperStyle: _paperStyle.name,
+      tagIds: _selectedTagIds,
+      photoPaths: _photoPaths,
+      audioPaths: _audioPaths,
+    );
+
+    if (widget.entryId == null) {
+      final sp = await SharedPreferences.getInstance();
+      await sp.remove('draft_title');
+      await sp.remove('draft_content');
+    }
+
+    if (mounted) {
+      context.push('/book-reader?id=$_id');
     }
   }
 
@@ -377,6 +423,11 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
             ),
           ),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.auto_stories_rounded),
+              tooltip: 'Read as Book',
+              onPressed: _readInBookMode,
+            ),
             IconButton(
               icon: Icon(
                 _isFavorite ? Icons.star_rounded : Icons.star_border_rounded,

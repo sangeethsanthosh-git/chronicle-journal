@@ -51,6 +51,11 @@ class HomeScreen extends ConsumerWidget {
           ),
           actions: [
             IconButton(
+              icon: const Icon(Icons.auto_stories_rounded),
+              tooltip: 'Read Journal as Book',
+              onPressed: () => context.push('/book-reader'),
+            ),
+            IconButton(
               icon: const Icon(Icons.search_rounded),
               onPressed: () => context.push('/search'),
             ),
