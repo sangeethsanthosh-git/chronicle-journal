@@ -58,7 +58,7 @@ jobs:
 
       - name: Upload Test Results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: unit-test-reports
           path: app/build/reports/tests/testDebugUnitTest/
@@ -68,7 +68,7 @@ jobs:
         run: ./gradlew assembleDebug
 
       - name: Upload Debug APK Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chronicle-debug-apk
           path: app/build/outputs/apk/debug/*.apk
@@ -80,7 +80,7 @@ jobs:
 
       - name: Upload Release APK
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chronicle-release-apk
           path: app/build/outputs/apk/release/*.apk
