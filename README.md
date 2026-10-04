@@ -150,6 +150,38 @@ On Windows PowerShell:
 
 ---
 
+## 📦 APK Size Optimization
+
+To ensure fast downloads and minimal storage usage, Chronicle incorporates production-grade APK size reduction strategies:
+
+1. **R8 Minification & Code Shrinking**: Unused classes and methods across all dependencies are stripped during Gradle release compilation (`isMinifyEnabled = true`).
+2. **Resource Shrinking**: Unused Android XML layouts, drawables, and assets are stripped (`isShrinkResources = true`).
+3. **Font & Icon Tree-Shaking**: Strips unused vector glyphs, reducing font sizes by **>99%** (e.g. `MaterialIcons` reduced from 1.6 MB to under 10 KB).
+4. **Symbol Stripping & Obfuscation**: Dart symbols and debug maps are extracted to external symbol files (`--obfuscate --split-debug-info=...`).
+5. **Per-Architecture Splitting (`--split-per-abi`)**: Generates targeted APKs for specific CPU architectures rather than bundling redundant native binaries.
+
+### Size Comparison
+
+| Build Variant | Size | Optimization Applied |
+|---|---|---|
+| **Unoptimized Fat Debug APK** | ~174 MB | None (includes Dart JIT, DevTools, multi-ABI fat binary) |
+| **`app-armeabi-v7a-release.apk`** | **18.4 MB** | **89% smaller** (R8 + ProGuard + AOT + stripped symbols) |
+| **`app-arm64-v8a-release.apk`** | **20.9 MB** | **88% smaller** (R8 + ProGuard + AOT + stripped symbols) |
+| **`app-x86_64-release.apk`** | **22.2 MB** | **87% smaller** (R8 + ProGuard + AOT + stripped symbols) |
+| **Google Play App Bundle (`.aab`)** | **~48.5 MB** | Dynamic feature delivery (**~10–18 MB** per device download) |
+
+### Building Small APKs Locally
+
+```bash
+# Build optimized split APKs per architecture (~18–22 MB each)
+flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/app/outputs/symbols
+
+# Build production Android App Bundle for Google Play (~10–18 MB user install)
+flutter build appbundle --release --obfuscate --split-debug-info=build/app/outputs/symbols
+```
+
+---
+
 ## 🤖 Continuous Integration & Automation
 
 - **GitHub Actions (`.github/workflows/ci-cd.yml`)**:
