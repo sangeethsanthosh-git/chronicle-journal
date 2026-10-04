@@ -72,6 +72,20 @@ class _JournalBookState extends State<JournalBook>
   }
 
   @override
+  void didUpdateWidget(JournalBook oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialOpen != oldWidget.initialOpen) {
+      if (widget.initialOpen && !_isOpen) {
+        setState(() => _isOpen = true);
+        _openController.forward();
+      } else if (!widget.initialOpen && _isOpen) {
+        setState(() => _isOpen = false);
+        _openController.reverse();
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _openController.dispose();
     super.dispose();
@@ -125,55 +139,71 @@ class _JournalBookState extends State<JournalBook>
             child: AspectRatio(
               aspectRatio:
                   16 / 10.5, // Standard physical landscape notebook spread
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // 1. Leather Book Outer Binding Base
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: widget.coverColor,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: const Color(0xFFC5A059).withAlpha(80),
-                          width: 1.2,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final halfWidth = constraints.maxWidth / 2;
+
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      // 1. Leather Book Outer Binding Base
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: widget.coverColor,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: const Color(0xFFC5A059).withAlpha(80),
+                              width: 1.2,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
 
-                  // 2. Open Journal Pages
-                  if (openProgress > 0.05)
-                    Positioned.fill(
-                      child: Opacity(
-                        opacity: ((openProgress - 0.05) / 0.95).clamp(0.0, 1.0),
-                        child: PhysicalPageTurn(
-                          spreads: widget.spreads,
-                          controller: widget.controller,
-                          paperColor: widget.paperColor,
+                      // 2. Open Journal Pages
+                      if (openProgress > 0.05)
+                        Positioned.fill(
+                          child: Opacity(
+                            opacity:
+                                ((openProgress - 0.05) / 0.95).clamp(0.0, 1.0),
+                            child: PhysicalPageTurn(
+                              spreads: widget.spreads,
+                              controller: widget.controller,
+                              paperColor: widget.paperColor,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
 
-                  // 3. 3D Opening Leather Cover (visible during opening animation or when closed)
-                  if (openProgress < 0.98)
-                    Positioned(
-                      left: 0,
-                      top: 0,
-                      bottom: 0,
-                      width: MediaQuery.of(context).size.width * 0.5,
-                      child: _build3DCover(openProgress),
-                    ),
+                      // 3. 3D Opening Leather Cover (visible during opening animation or when closed)
+                      if (openProgress < 0.98)
+                        Positioned(
+                          left: 0,
+                          top: 0,
+                          bottom: 0,
+                          width: halfWidth,
+                          child: _build3DCover(openProgress),
+                        ),
 
-                  // 4. Floating Header Overlay when open (Orientation toggle, Page count, Close)
-                  if (_isOpen && openProgress > 0.8)
-                    Positioned(
-                      top: -38,
-                      left: 0,
-                      right: 0,
-                      child: _buildBookControlsHeader(context),
-                    ),
-                ],
+                      // 4. Closed book interaction layer: tapping ANYWHERE on closed book opens it
+                      if (!_isOpen || openProgress < 0.1)
+                        Positioned.fill(
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: _toggleOpen,
+                          ),
+                        ),
+
+                      // 5. Floating Header Overlay when open (Orientation toggle, Page count, Close)
+                      if (_isOpen && openProgress > 0.8)
+                        Positioned(
+                          top: -38,
+                          left: 0,
+                          right: 0,
+                          child: _buildBookControlsHeader(context),
+                        ),
+                    ],
+                  );
+                },
               ),
             ),
           ),

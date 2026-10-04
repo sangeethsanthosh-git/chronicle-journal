@@ -105,6 +105,19 @@ class _PhysicalPageTurnState extends State<PhysicalPageTurn>
 
             return GestureDetector(
               behavior: HitTestBehavior.opaque,
+              onTapUp: (details) {
+                if (widget.controller.isAnimating || widget.controller.isDragging) return;
+                final localX = details.localPosition.dx;
+                if (localX >= pageWidth) {
+                  if (widget.controller.canTurnForward) {
+                    widget.controller.nextPage();
+                  }
+                } else {
+                  if (widget.controller.canTurnBackward) {
+                    widget.controller.previousPage();
+                  }
+                }
+              },
               onHorizontalDragStart: (details) {
                 final localX = details.localPosition.dx;
                 // If touch on right half -> turn forward; if on left half -> turn backward

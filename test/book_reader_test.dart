@@ -3,6 +3,8 @@ import 'package:chronicle/core/widgets/desk_background.dart';
 import 'package:chronicle/data/local/app_database.dart';
 import 'package:chronicle/domain/models/journal_entry_with_details.dart';
 import 'package:chronicle/domain/models/mood.dart';
+import 'package:chronicle/features/journal/presentation/widgets/journal_page.dart';
+import 'package:chronicle/features/journal/presentation/widgets/page_turn_controller.dart';
 import 'package:chronicle/presentation/screens/book_reader/book_page_content_view.dart';
 import 'package:chronicle/presentation/screens/book_reader/book_page_data.dart';
 import 'package:flutter/material.dart';
@@ -116,6 +118,70 @@ void main() {
 
       expect(find.text('AUTUMN AFTERNOON'), findsOneWidget);
       expect(find.text('— 1 —'), findsOneWidget);
+    });
+
+    test('JournalPageContent.fromEntry produces at least 4 pages (2 full spreads)', () {
+      final entry = JournalEntry(
+        id: 'test-simple',
+        title: 'Morning Walk',
+        content: 'A quick quiet morning walk around the neighborhood park.',
+        createdAt: DateTime(2026, 10, 4),
+        updatedAt: DateTime(2026, 10, 4),
+        entryDate: DateTime(2026, 10, 4),
+        mood: 'happy',
+        moodIntensity: 3,
+        isFavorite: false,
+        paperStyle: 'ruled',
+        layout: 'classic',
+      );
+
+      final entryWithDetails = JournalEntryWithDetails(
+        entry: entry,
+        tags: const [],
+        attachments: const [],
+      );
+
+      final pages = JournalPageContent.fromEntry(entryWithDetails);
+
+      // Must have at least 4 pages (2 spreads) so canTurnForward and canTurnBackward are active
+      expect(pages.length, greaterThanOrEqualTo(4));
+      expect(pages[0].type, equals(JournalPageType.textOpening));
+      expect(pages[1].type, equals(JournalPageType.textContinuation));
+      expect(pages[2].type, equals(JournalPageType.scrapbook));
+      expect(pages[3].type, equals(JournalPageType.quoteReflection));
+    });
+
+    test('PageTurnController turns forward and backward across spreads smoothly', () async {
+      final controller = PageTurnController();
+      controller.setTotalSpreads(3);
+
+      expect(controller.currentSpreadIndex, equals(0));
+      expect(controller.canTurnForward, isTrue);
+      expect(controller.canTurnBackward, isFalse);
+
+      // Turn forward to spread 1
+      await controller.nextPage();
+      expect(controller.currentSpreadIndex, equals(1));
+      expect(controller.canTurnForward, isTrue);
+      expect(controller.canTurnBackward, isTrue);
+
+      // Turn forward to spread 2 (last spread)
+      await controller.nextPage();
+      expect(controller.currentSpreadIndex, equals(2));
+      expect(controller.canTurnForward, isFalse);
+      expect(controller.canTurnBackward, isTrue);
+
+      // Turn backward to spread 1
+      await controller.previousPage();
+      expect(controller.currentSpreadIndex, equals(1));
+      expect(controller.canTurnForward, isTrue);
+      expect(controller.canTurnBackward, isTrue);
+
+      // Turn backward to spread 0
+      await controller.previousPage();
+      expect(controller.currentSpreadIndex, equals(0));
+      expect(controller.canTurnForward, isTrue);
+      expect(controller.canTurnBackward, isFalse);
     });
   });
 }

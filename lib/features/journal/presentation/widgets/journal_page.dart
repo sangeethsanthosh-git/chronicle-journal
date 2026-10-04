@@ -80,12 +80,33 @@ class JournalPageContent {
     );
   }
 
-  /// Factory to convert a JournalEntryWithDetails into a pair or sequence of pages
+  /// Factory to convert a JournalEntryWithDetails into a pair or sequence of pages.
+  /// Guarantees at least 4 pages (2 spreads: Spread 1 = Opening + Story, Spread 2 = Keepsakes + Reflection)
+  /// so physical page turning forward and backward is always active.
   static List<JournalPageContent> fromEntry(JournalEntryWithDetails item) {
     final entry = item.entry;
     final pages = <JournalPageContent>[];
+    final photos = item.photoAttachments.map((a) => a.uri).toList();
 
-    // Left / Opening Page
+    // Split text into opening and continuation
+    final rawContent = entry.content.trim();
+    String openingChunk;
+    String continuationChunk;
+
+    if (rawContent.length > 280) {
+      openingChunk = rawContent.substring(0, 280);
+      continuationChunk = rawContent.substring(280);
+    } else if (rawContent.isNotEmpty) {
+      openingChunk = rawContent;
+      continuationChunk =
+          '“In every quiet moment recorded, there lies a story worth remembering. Through these ink strokes, time stands still.”';
+    } else {
+      openingChunk = 'A quiet moment recorded in the journal.';
+      continuationChunk =
+          '“Write what you cannot say aloud. Small moments build a lifetime of wonder.”';
+    }
+
+    // Page 1: Chapter Opening (Date, Postal Stamp, Title, Mood, Drop Cap Opening)
     pages.add(
       JournalPageContent(
         type: JournalPageType.textOpening,
@@ -93,47 +114,59 @@ class JournalPageContent {
         title: entry.title.isEmpty
             ? DateFormat('EEEE, MMMM d').format(entry.entryDate)
             : entry.title,
-        bodyText: entry.content,
+        bodyText: openingChunk,
         date: entry.entryDate,
         location: entry.locationName,
         mood: Mood.fromString(entry.mood),
-        photoPaths: item.photoAttachments.map((a) => a.uri).toList(),
+        photoPaths: photos,
       ),
     );
 
-    // If photos exist, add photo/scrapbook page
-    if (item.photoAttachments.isNotEmpty) {
-      pages.add(
-        JournalPageContent(
-          type: JournalPageType.photoMemories,
-          entry: item,
-          title: 'Keepsakes & Memories',
-          bodyText: entry.content.length > 150
-              ? entry.content.substring(
-                  150,
-                  entry.content.length.clamp(150, 400),
-                )
-              : 'Cherished photographic moments preserved in ink.',
-          date: entry.entryDate,
-          location: entry.locationName,
-          photoPaths: item.photoAttachments.map((a) => a.uri).toList(),
-        ),
-      );
-    } else {
-      // Add quote reflection / scrapbook back page
-      pages.add(
-        JournalPageContent(
-          type: JournalPageType.quoteReflection,
-          entry: item,
-          title: 'Daily Reflection',
-          bodyText: 'Every page turned is a testament to mindful living.',
-          date: entry.entryDate,
-          quoteText:
-              '“Write down what you cannot say aloud. Small moments build a lifetime of wonder.”',
-          quoteAuthor: 'Chronicle Study Notes',
-        ),
-      );
-    }
+    // Page 2: Story Continuation
+    pages.add(
+      JournalPageContent(
+        type: JournalPageType.textContinuation,
+        entry: item,
+        title: entry.title.isEmpty ? 'Journal Entry' : entry.title,
+        bodyText: continuationChunk,
+        date: entry.entryDate,
+        location: entry.locationName,
+        mood: Mood.fromString(entry.mood),
+      ),
+    );
+
+    // Page 3: Keepsakes & Media / Polaroid Memories
+    pages.add(
+      JournalPageContent(
+        type: photos.isNotEmpty
+            ? JournalPageType.photoMemories
+            : JournalPageType.scrapbook,
+        entry: item,
+        title: 'Keepsakes & Memories',
+        bodyText: photos.isNotEmpty
+            ? 'Cherished photographic moments preserved in ink.'
+            : (entry.content.length > 100
+                ? entry.content.substring(0, 100)
+                : 'Scrapbook reflections and daily impressions etched in memory.'),
+        date: entry.entryDate,
+        location: entry.locationName,
+        photoPaths: photos,
+      ),
+    );
+
+    // Page 4: Reflection & Concluding Epilogue
+    pages.add(
+      JournalPageContent(
+        type: JournalPageType.quoteReflection,
+        entry: item,
+        title: 'Daily Reflection',
+        bodyText: 'Every page turned is a testament to mindful living.',
+        date: entry.entryDate,
+        quoteText:
+            '“Write down what you cannot say aloud. Small moments build a lifetime of wonder.”',
+        quoteAuthor: 'Chronicle Study Notes',
+      ),
+    );
 
     return pages;
   }

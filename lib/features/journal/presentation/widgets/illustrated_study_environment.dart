@@ -160,7 +160,11 @@ class _IllustratedStudyEnvironmentState
                   horizontal: 16,
                   vertical: 24,
                 ),
-                child: widget.child,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {}, // Prevent outside tap from closing journal when interacting with book
+                  child: widget.child,
+                ),
               ),
             ),
           ],

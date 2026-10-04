@@ -53,7 +53,7 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
   bool _showControls = true;
   bool _isDualSpread = false;
   bool _isJournalOpen = true;
-  ReaderBindingStyle _bindingStyle = ReaderBindingStyle.gameCodex;
+  ReaderBindingStyle _bindingStyle = ReaderBindingStyle.hardcover;
   CodexTab _codexTab = CodexTab.story;
   String? _selectedEntryId;
   bool _isLandscape = false;
@@ -129,7 +129,20 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
     final spreads = <JournalPageSpread>[];
     int pageCounter = 1;
 
-    for (final item in entryList) {
+    // Prioritize selected entry if one was passed in
+    final orderedEntries = <JournalEntryWithDetails>[];
+    if (_selectedEntryId != null) {
+      final selected =
+          entryList.where((e) => e.entry.id == _selectedEntryId).toList();
+      final others =
+          entryList.where((e) => e.entry.id != _selectedEntryId).toList();
+      orderedEntries.addAll(selected);
+      orderedEntries.addAll(others);
+    } else {
+      orderedEntries.addAll(entryList);
+    }
+
+    for (final item in orderedEntries) {
       final pages = JournalPageContent.fromEntry(item);
       for (int i = 0; i < pages.length; i += 2) {
         final leftContent = pages[i].copyWith(pageNumber: pageCounter++);
@@ -517,269 +530,361 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
             );
           }
 
-          return Scaffold(
-            backgroundColor: _bindingStyle == ReaderBindingStyle.ringBinder
-                ? deskTheme.deskColor
-                : deskTheme.coverColor,
-            body: SafeArea(
-              child: Stack(
-                children: [
-                  // The Reader Workspace
-                  Positioned.fill(
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() => _showControls = !_showControls);
-                      },
+          final isPageTurnStyle =
+              _bindingStyle == ReaderBindingStyle.physicalStudy ||
+                  (_bindingStyle == ReaderBindingStyle.gameCodex &&
+                      _codexTab == CodexTab.story);
+          final currentSpreads = _buildJournalSpreads(entries, deskTheme);
+
+          return PopScope(
+            canPop: true,
+            onPopInvokedWithResult: (didPop, result) {
+              if (!didPop) {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/home');
+                }
+              }
+            },
+            child: Scaffold(
+              backgroundColor: _bindingStyle == ReaderBindingStyle.ringBinder
+                  ? deskTheme.deskColor
+                  : deskTheme.coverColor,
+              body: SafeArea(
+                child: Stack(
+                  children: [
+                    // The Reader Workspace (Directly accessible without tap-eating blocker)
+                    Positioned.fill(
                       child: readerContent,
                     ),
-                  ),
 
-                  // Overlay Controls (Top & Bottom Bar)
-                  if (_showControls) ...[
-                    // Top App Bar
+                    // 1. Permanent Floating Back Button (ALWAYS accessible on screen)
                     Positioned(
-                      top: 8,
-                      left: 12,
-                      right: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withAlpha(160),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(
-                                Icons.arrow_back,
-                                color: Colors.white,
+                      top: 10,
+                      left: 10,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(24),
+                          onTap: () {
+                            if (context.canPop()) {
+                              context.pop();
+                            } else {
+                              context.go('/home');
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withAlpha(160),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFFC5A059).withAlpha(160),
+                                width: 1.2,
                               ),
-                              tooltip: 'Back',
-                              onPressed: () => context.pop(),
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                activeEntry.entry.title.isEmpty
-                                    ? DateFormat(
-                                        'MMMM d, yyyy',
-                                      ).format(activeEntry.entry.entryDate)
-                                    : activeEntry.entry.title,
-                                style: const TextStyle(
-                                  fontFamily: 'serif',
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            // Binding Style Selector (Binder / Hardcover / Postcard)
-                            PopupMenuButton<ReaderBindingStyle>(
-                              icon: const Icon(
-                                Icons.palette_outlined,
-                                color: Colors.white,
-                              ),
-                              tooltip: 'Switch Aesthetic Mode',
-                              onSelected: (style) {
-                                setState(() => _bindingStyle = style);
-                              },
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(
-                                  value: ReaderBindingStyle.gameCodex,
-                                  child: Text(
-                                    '🎮 Game Codex Notebook (References 1-4)',
-                                  ),
-                                ),
-                                const PopupMenuItem(
-                                  value: ReaderBindingStyle.physicalStudy,
-                                  child: Text('✨ Physical Illustrated Journal'),
-                                ),
-                                const PopupMenuItem(
-                                  value: ReaderBindingStyle.ringBinder,
-                                  child: Text('📋 Ring Binder Desk (Image 4)'),
-                                ),
-                                const PopupMenuItem(
-                                  value: ReaderBindingStyle.hardcover,
-                                  child: Text('📖 Hardcover Journal'),
-                                ),
-                                const PopupMenuItem(
-                                  value: ReaderBindingStyle.postcard,
-                                  child: Text('✉️ Vintage Postcard (Image 1)'),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black45,
+                                  blurRadius: 8,
+                                  offset: Offset(0, 2),
                                 ),
                               ],
                             ),
-                            // Orientation Switcher (Landscape Spread vs Portrait)
-                            IconButton(
-                              icon: Icon(
-                                _isLandscape
-                                    ? Icons.screen_lock_rotation_rounded
-                                    : Icons.screen_rotation_rounded,
-                                color: Colors.white,
-                              ),
-                              tooltip: _isLandscape
-                                  ? 'Portrait View'
-                                  : 'Landscape Mode (Physical Book Spread)',
-                              onPressed: _toggleOrientation,
+                            child: const Icon(
+                              Icons.arrow_back,
+                              color: Colors.white,
+                              size: 20,
                             ),
-                            // Spread Toggle (Single vs Dual Page)
-                            if (_bindingStyle != ReaderBindingStyle.postcard &&
-                                _bindingStyle !=
-                                    ReaderBindingStyle.physicalStudy)
-                              IconButton(
-                                icon: Icon(
-                                  isWide ? Icons.auto_stories : Icons.menu_book,
-                                  color: Colors.white,
-                                ),
-                                tooltip: isWide
-                                    ? 'Single Page View'
-                                    : 'Two-Page Spread View',
-                                onPressed: () {
-                                  setState(() {
-                                    _isDualSpread = !_isDualSpread;
-                                    _currentPageIndex = 0;
-                                    _pageController = PageController();
-                                  });
-                                },
-                              ),
-                            // Table of Contents
-                            IconButton(
-                              icon: const Icon(
-                                Icons.list_alt_rounded,
-                                color: Colors.white,
-                              ),
-                              tooltip: 'Table of Contents',
-                              onPressed: () => _showTableOfContents(
-                                context,
-                                entries,
-                                bookPages,
-                              ),
-                            ),
-                            // Export to PDF (Exact Scrapbook & Journal replication)
-                            IconButton(
-                              icon: const Icon(
-                                Icons.picture_as_pdf_outlined,
-                                color: Colors.white,
-                              ),
-                              tooltip: 'Export Journal Book as PDF',
-                              onPressed: () =>
-                                  PdfExporter.exportEntriesToPdf([activeEntry]),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
 
-                    // Bottom Navigation Bar
-                    Positioned(
-                      bottom: 12,
-                      left: 16,
-                      right: 16,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withAlpha(170),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // Previous Page
-                            IconButton(
-                              icon: const Icon(
-                                Icons.arrow_back_ios_rounded,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                              onPressed:
-                                  _bindingStyle ==
-                                      ReaderBindingStyle.physicalStudy
-                                  ? (_pageTurnController.currentSpreadIndex > 0
-                                        ? () =>
-                                              _pageTurnController.previousPage()
-                                        : null)
-                                  : (_currentPageIndex > 0 ? _prevPage : null),
-                            ),
-
-                            // Page Counter & Date Indicator
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  _bindingStyle ==
-                                          ReaderBindingStyle.physicalStudy
-                                      ? 'Spread ${_pageTurnController.currentSpreadIndex + 1} of ${_buildJournalSpreads(entries, deskTheme).length}'
-                                      : 'Page ${_currentPageIndex + 1} of ${bookPages.length}',
+                    // Overlay Controls (Top & Bottom Bar)
+                    if (_showControls) ...[
+                      // Top App Bar
+                      Positioned(
+                        top: 8,
+                        left: 56,
+                        right: 12,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withAlpha(160),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  activeEntry.entry.title.isEmpty
+                                      ? DateFormat(
+                                          'MMMM d, yyyy',
+                                        ).format(activeEntry.entry.entryDate)
+                                      : activeEntry.entry.title,
                                   style: const TextStyle(
                                     fontFamily: 'serif',
-                                    fontSize: 13,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                Text(
-                                  DateFormat(
-                                    'MMM d, yyyy',
-                                  ).format(activeEntry.entry.entryDate),
-                                  style: const TextStyle(
-                                    fontFamily: 'serif',
-                                    fontSize: 11,
-                                    color: Colors.white70,
+                              ),
+                              // Binding Style Selector (Binder / Hardcover / Postcard)
+                              PopupMenuButton<ReaderBindingStyle>(
+                                icon: const Icon(
+                                  Icons.palette_outlined,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                tooltip: 'Switch Aesthetic Mode',
+                                onSelected: (style) {
+                                  setState(() => _bindingStyle = style);
+                                },
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                    value: ReaderBindingStyle.hardcover,
+                                    child:
+                                        Text('📖 Hardcover Journal (3D Pages)'),
                                   ),
+                                  const PopupMenuItem(
+                                    value: ReaderBindingStyle.physicalStudy,
+                                    child:
+                                        Text('✨ Physical Illustrated Journal'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: ReaderBindingStyle.gameCodex,
+                                    child: Text(
+                                      '🎮 Game Codex Notebook (References 1-4)',
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: ReaderBindingStyle.ringBinder,
+                                    child: Text('📋 Ring Binder Desk (Image 4)'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: ReaderBindingStyle.postcard,
+                                    child: Text('✉️ Vintage Postcard (Image 1)'),
+                                  ),
+                                ],
+                              ),
+                              // Orientation Switcher (Landscape Spread vs Portrait)
+                              IconButton(
+                                icon: Icon(
+                                  _isLandscape
+                                      ? Icons.screen_lock_rotation_rounded
+                                      : Icons.screen_rotation_rounded,
+                                  color: Colors.white,
+                                  size: 20,
                                 ),
-                              ],
-                            ),
-
-                            // Quick Edit Entry
-                            IconButton(
-                              icon: const Icon(
-                                Icons.edit_outlined,
-                                color: Colors.white,
-                                size: 20,
+                                tooltip: _isLandscape
+                                    ? 'Portrait View'
+                                    : 'Landscape Mode (Physical Book Spread)',
+                                onPressed: _toggleOrientation,
                               ),
-                              tooltip: 'Edit Journal Entry',
-                              onPressed: () {
-                                context.push(
-                                  '/editor?id=${activeEntry.entry.id}',
-                                );
-                              },
-                            ),
-
-                            // Next Page
-                            IconButton(
-                              icon: const Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                color: Colors.white,
-                                size: 20,
+                              // Spread Toggle (Single vs Dual Page)
+                              if (_bindingStyle != ReaderBindingStyle.postcard &&
+                                  _bindingStyle !=
+                                      ReaderBindingStyle.physicalStudy)
+                                IconButton(
+                                  icon: Icon(
+                                    isWide
+                                        ? Icons.auto_stories
+                                        : Icons.menu_book,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                  tooltip: isWide
+                                      ? 'Single Page View'
+                                      : 'Two-Page Spread View',
+                                  onPressed: () {
+                                    setState(() {
+                                      _isDualSpread = !_isDualSpread;
+                                      _currentPageIndex = 0;
+                                      _pageController = PageController();
+                                    });
+                                  },
+                                ),
+                              // Table of Contents
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.list_alt_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                tooltip: 'Table of Contents',
+                                onPressed: () => _showTableOfContents(
+                                  context,
+                                  entries,
+                                  bookPages,
+                                ),
                               ),
-                              onPressed:
-                                  _bindingStyle ==
-                                      ReaderBindingStyle.physicalStudy
-                                  ? (_pageTurnController.currentSpreadIndex <
-                                            _buildJournalSpreads(
-                                                  entries,
-                                                  deskTheme,
-                                                ).length -
-                                                1
-                                        ? () => _pageTurnController.nextPage()
-                                        : null)
-                                  : (_currentPageIndex < bookPages.length - 1
-                                        ? () => _nextPage(bookPages.length)
-                                        : null),
-                            ),
-                          ],
+                              // Zen Mode / Fullscreen toggle
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.fullscreen_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                tooltip: 'Zen Mode (Hide Bars)',
+                                onPressed: () =>
+                                    setState(() => _showControls = false),
+                              ),
+                              // Export to PDF (Exact Scrapbook & Journal replication)
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.picture_as_pdf_outlined,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                tooltip: 'Export Journal Book as PDF',
+                                onPressed: () => PdfExporter.exportEntriesToPdf(
+                                    [activeEntry]),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
+
+                      // Bottom Navigation Bar
+                      Positioned(
+                        bottom: 12,
+                        left: 16,
+                        right: 16,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withAlpha(170),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Previous Page
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.arrow_back_ios_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                onPressed: isPageTurnStyle
+                                    ? (_pageTurnController.canTurnBackward
+                                        ? () =>
+                                            _pageTurnController.previousPage()
+                                        : null)
+                                    : (_currentPageIndex > 0 ? _prevPage : null),
+                              ),
+
+                              // Page Counter & Date Indicator
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    isPageTurnStyle
+                                        ? 'Spread ${_pageTurnController.currentSpreadIndex + 1} of ${currentSpreads.length}'
+                                        : 'Page ${_currentPageIndex + 1} of ${bookPages.length}',
+                                    style: const TextStyle(
+                                      fontFamily: 'serif',
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  Text(
+                                    DateFormat(
+                                      'MMM d, yyyy',
+                                    ).format(activeEntry.entry.entryDate),
+                                    style: const TextStyle(
+                                      fontFamily: 'serif',
+                                      fontSize: 11,
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              // Quick Edit Entry
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.edit_outlined,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                tooltip: 'Edit Journal Entry',
+                                onPressed: () {
+                                  context.push(
+                                    '/editor?id=${activeEntry.entry.id}',
+                                  );
+                                },
+                              ),
+
+                              // Next Page
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                onPressed: isPageTurnStyle
+                                    ? (_pageTurnController.canTurnForward
+                                        ? () => _pageTurnController.nextPage()
+                                        : null)
+                                    : (_currentPageIndex < bookPages.length - 1
+                                        ? () => _nextPage(bookPages.length)
+                                        : null),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ] else ...[
+                      // Floating button to restore controls when in Zen mode
+                      Positioned(
+                        top: 10,
+                        right: 10,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(24),
+                            onTap: () => setState(() => _showControls = true),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withAlpha(160),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: const Color(0xFFC5A059).withAlpha(160),
+                                  width: 1.2,
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black45,
+                                    blurRadius: 8,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.fullscreen_exit_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           );
