@@ -64,6 +64,11 @@ class PreferencesNotifier extends Notifier<UserPreferences> {
     state = state.copyWith(showQuotes: show);
     await _repo.setShowQuotes(show);
   }
+
+  Future<void> setMusicIntegrationEnabled(bool enabled) async {
+    state = state.copyWith(isMusicIntegrationEnabled: enabled);
+    await _repo.setMusicIntegrationEnabled(enabled);
+  }
 }
 
 final preferencesProvider =

@@ -13,6 +13,7 @@ class UserPreferences {
   final int reminderMinute;
   final bool isOnboardingCompleted;
   final bool showQuotes;
+  final bool isMusicIntegrationEnabled;
 
   const UserPreferences({
     this.themeMode = ThemeMode.system,
@@ -25,6 +26,7 @@ class UserPreferences {
     this.reminderMinute = 0,
     this.isOnboardingCompleted = false,
     this.showQuotes = true,
+    this.isMusicIntegrationEnabled = false,
   });
 
   UserPreferences copyWith({
@@ -38,6 +40,7 @@ class UserPreferences {
     int? reminderMinute,
     bool? isOnboardingCompleted,
     bool? showQuotes,
+    bool? isMusicIntegrationEnabled,
   }) {
     return UserPreferences(
       themeMode: themeMode ?? this.themeMode,
@@ -51,6 +54,8 @@ class UserPreferences {
       isOnboardingCompleted:
           isOnboardingCompleted ?? this.isOnboardingCompleted,
       showQuotes: showQuotes ?? this.showQuotes,
+      isMusicIntegrationEnabled:
+          isMusicIntegrationEnabled ?? this.isMusicIntegrationEnabled,
     );
   }
 }
@@ -66,4 +71,5 @@ abstract class PreferencesRepository {
   Future<void> setReminderTime(int hour, int minute);
   Future<void> setOnboardingCompleted(bool completed);
   Future<void> setShowQuotes(bool show);
+  Future<void> setMusicIntegrationEnabled(bool enabled);
 }

@@ -171,6 +171,48 @@ class EntryCard extends StatelessWidget {
                     ),
                   ),
                 ],
+                if (entryWithDetails.soundtracks.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.vintageGold.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: AppColors.vintageGold.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.audiotrack,
+                          size: 11,
+                          color: AppColors.vintageGold,
+                        ),
+                        const SizedBox(width: 3),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 100),
+                          child: Text(
+                            entryWithDetails.soundtracks.first.title ??
+                                'Soundtrack',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontFamily: 'serif',
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.vintageGold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 const Spacer(),
                 if (entry.isFavorite)
                   const Icon(

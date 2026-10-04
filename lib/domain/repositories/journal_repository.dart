@@ -1,5 +1,6 @@
 import '../../data/local/app_database.dart';
 import '../../features/journal_stack/domain/models/journal_stack_item.dart';
+import '../../features/soundtrack/domain/models/now_playing.dart';
 import '../models/journal_entry_with_details.dart';
 
 abstract class JournalRepository {
@@ -25,6 +26,7 @@ abstract class JournalRepository {
     List<String> tagIds = const [],
     List<String> photoPaths = const [],
     List<String> audioPaths = const [],
+    NowPlaying? soundtrack,
   });
   Future<void> toggleFavorite(String id, bool isFavorite);
   Future<void> softDeleteEntry(String id);
@@ -70,4 +72,9 @@ abstract class JournalRepository {
   });
   Future<void> toggleArchiveJournalVolume(String id, bool isArchived);
   Future<void> deleteJournalVolume(String id);
+
+  // Soundtracks
+  Future<List<Soundtrack>> getSoundtracksForEntry(String entryId);
+  Future<void> attachSoundtrack(String entryId, NowPlaying soundtrack);
+  Future<void> removeSoundtrack(String soundtrackId);
 }

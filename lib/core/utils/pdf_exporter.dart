@@ -241,6 +241,12 @@ class PdfExporter {
                           pw.SizedBox(height: 12),
                           _buildPdfCassetteTape(),
                         ],
+
+                        // Soundtrack Memory Box if soundtrack attached
+                        if (e.soundtracks.isNotEmpty) ...[
+                          pw.SizedBox(height: 10),
+                          _buildPdfSoundtrackBox(e.soundtracks.first),
+                        ],
                       ],
                     ),
                   ),
@@ -564,6 +570,52 @@ class PdfExporter {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  static pw.Widget _buildPdfSoundtrackBox(Soundtrack soundtrack) {
+    return pw.Container(
+      padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: pw.BoxDecoration(
+        color: PdfColor.fromHex('#F5EFE6'),
+        borderRadius: pw.BorderRadius.circular(6),
+        border: pw.Border.all(color: PdfColor.fromHex('#D5C7B2'), width: 1),
+      ),
+      child: pw.Row(
+        children: [
+          pw.Text(
+            '♫ ',
+            style: pw.TextStyle(
+              fontSize: 13,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColor.fromHex('#B59351'),
+            ),
+          ),
+          pw.SizedBox(width: 6),
+          pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                'SOUNDTRACK: ${(soundtrack.title ?? "Unknown Track").toUpperCase()}',
+                style: pw.TextStyle(
+                  fontSize: 8.5,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColor.fromHex('#2C241E'),
+                ),
+              ),
+              if (soundtrack.artist != null)
+                pw.Text(
+                  'Artist: ${soundtrack.artist!}${soundtrack.applicationName != null ? " • via ${soundtrack.applicationName!}" : ""}',
+                  style: pw.TextStyle(
+                    fontSize: 7.5,
+                    fontStyle: pw.FontStyle.italic,
+                    color: PdfColor.fromHex('#6E6053'),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }

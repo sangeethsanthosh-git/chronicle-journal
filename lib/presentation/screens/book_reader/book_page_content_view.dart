@@ -9,6 +9,8 @@ import '../../../core/widgets/polaroid_card.dart';
 import '../../../core/widgets/postal_stamp.dart';
 import '../../../core/widgets/vintage_rubber_stamp.dart';
 import '../../../core/widgets/washi_tape.dart';
+import '../../../features/soundtrack/domain/models/soundtrack_card_style.dart';
+import '../../../features/soundtrack/presentation/widgets/soundtrack_card.dart';
 import 'book_page_data.dart';
 
 /// Renders the contents of an individual physical book page with editorial
@@ -83,6 +85,18 @@ class BookPageContentView extends StatelessWidget {
                     CassetteTapeWidget(
                       audioPath: page.audioPath!,
                       label: 'VOICE MEMO • SIDE A',
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+
+                  // Soundtrack Memory (Tape / Vinyl / Polaroid Memory)
+                  if (page.soundtrack != null) ...[
+                    Center(
+                      child: SoundtrackCard(
+                        track: page.soundtrack!,
+                        style: SoundtrackCardStyle.cassette,
+                        width: 230,
+                      ),
                     ),
                     const SizedBox(height: 12),
                   ],

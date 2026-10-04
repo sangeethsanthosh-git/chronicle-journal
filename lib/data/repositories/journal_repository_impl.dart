@@ -5,6 +5,7 @@ import '../local/app_database.dart';
 import '../../domain/models/journal_entry_with_details.dart';
 import '../../domain/repositories/journal_repository.dart';
 import '../../features/journal_stack/domain/models/journal_stack_item.dart';
+import '../../features/soundtrack/domain/models/now_playing.dart';
 
 class JournalRepositoryImpl implements JournalRepository {
   final AppDatabase _db;
@@ -19,11 +20,13 @@ class JournalRepositoryImpl implements JournalRepository {
       for (final entry in entries) {
         final tags = await _db.getTagsForEntry(entry.id);
         final attachments = await _db.getAttachmentsForEntry(entry.id);
+        final soundtracks = await _db.getSoundtracksForEntry(entry.id);
         list.add(
           JournalEntryWithDetails(
             entry: entry,
             tags: tags,
             attachments: attachments,
+            soundtracks: soundtracks,
           ),
         );
       }
@@ -38,11 +41,13 @@ class JournalRepositoryImpl implements JournalRepository {
     for (final entry in entries) {
       final tags = await _db.getTagsForEntry(entry.id);
       final attachments = await _db.getAttachmentsForEntry(entry.id);
+      final soundtracks = await _db.getSoundtracksForEntry(entry.id);
       list.add(
         JournalEntryWithDetails(
           entry: entry,
           tags: tags,
           attachments: attachments,
+          soundtracks: soundtracks,
         ),
       );
     }
@@ -55,10 +60,12 @@ class JournalRepositoryImpl implements JournalRepository {
     if (entry == null) return null;
     final tags = await _db.getTagsForEntry(entry.id);
     final attachments = await _db.getAttachmentsForEntry(entry.id);
+    final soundtracks = await _db.getSoundtracksForEntry(entry.id);
     return JournalEntryWithDetails(
       entry: entry,
       tags: tags,
       attachments: attachments,
+      soundtracks: soundtracks,
     );
   }
 
@@ -82,6 +89,7 @@ class JournalRepositoryImpl implements JournalRepository {
     List<String> tagIds = const [],
     List<String> photoPaths = const [],
     List<String> audioPaths = const [],
+    NowPlaying? soundtrack,
   }) async {
     final now = DateTime.now();
     final existing = await _db.getEntryById(id);
@@ -139,6 +147,28 @@ class JournalRepositoryImpl implements JournalRepository {
           ),
         );
       }
+    }
+
+    // Save soundtrack if provided
+    if (soundtrack != null) {
+      final existingSoundtracks = await _db.getSoundtracksForEntry(id);
+      final soundtrackId = existingSoundtracks.isNotEmpty
+          ? existingSoundtracks.first.id
+          : _uuid.v4();
+
+      await _db.insertOrUpdateSoundtrack(
+        SoundtracksCompanion(
+          id: Value(soundtrackId),
+          entryId: Value(id),
+          title: Value(soundtrack.title),
+          artist: Value(soundtrack.artist),
+          album: Value(soundtrack.album),
+          artworkUri: Value(soundtrack.artworkUri),
+          applicationName: Value(soundtrack.applicationName),
+          durationMs: Value(soundtrack.duration?.inMilliseconds),
+          capturedAt: Value(soundtrack.capturedAt),
+        ),
+      );
     }
   }
 
@@ -380,5 +410,36 @@ class JournalRepositoryImpl implements JournalRepository {
   @override
   Future<void> deleteJournalVolume(String id) {
     return _db.deleteCollection(id);
+  }
+
+  // Soundtracks
+  @override
+  Future<List<Soundtrack>> getSoundtracksForEntry(String entryId) {
+    return _db.getSoundtracksForEntry(entryId);
+  }
+
+  @override
+  Future<void> attachSoundtrack(String entryId, NowPlaying soundtrack) async {
+    final existing = await _db.getSoundtracksForEntry(entryId);
+    final soundtrackId = existing.isNotEmpty ? existing.first.id : _uuid.v4();
+
+    await _db.insertOrUpdateSoundtrack(
+      SoundtracksCompanion(
+        id: Value(soundtrackId),
+        entryId: Value(entryId),
+        title: Value(soundtrack.title),
+        artist: Value(soundtrack.artist),
+        album: Value(soundtrack.album),
+        artworkUri: Value(soundtrack.artworkUri),
+        applicationName: Value(soundtrack.applicationName),
+        durationMs: Value(soundtrack.duration?.inMilliseconds),
+        capturedAt: Value(soundtrack.capturedAt),
+      ),
+    );
+  }
+
+  @override
+  Future<void> removeSoundtrack(String soundtrackId) {
+    return _db.deleteSoundtrack(soundtrackId);
   }
 }

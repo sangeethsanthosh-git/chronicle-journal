@@ -87,6 +87,22 @@ class CollectionEntryCrossRefs extends Table {
   Set<Column> get primaryKey => {collectionId, entryId};
 }
 
+class Soundtracks extends Table {
+  TextColumn get id => text()();
+  TextColumn get entryId =>
+      text().references(JournalEntries, #id, onDelete: KeyAction.cascade)();
+  TextColumn get title => text().nullable()();
+  TextColumn get artist => text().nullable()();
+  TextColumn get album => text().nullable()();
+  TextColumn get artworkUri => text().nullable()();
+  TextColumn get applicationName => text().nullable()();
+  IntColumn get durationMs => integer().nullable()();
+  DateTimeColumn get capturedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 @DriftDatabase(
   tables: [
     JournalEntries,
@@ -95,13 +111,14 @@ class CollectionEntryCrossRefs extends Table {
     Attachments,
     Collections,
     CollectionEntryCrossRefs,
+    Soundtracks,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -114,6 +131,9 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(collections, collections.colorHex);
         await m.addColumn(collections, collections.isArchived);
         await m.addColumn(collections, collections.updatedAt);
+      }
+      if (from < 3) {
+        await m.createTable(soundtracks);
       }
     },
     beforeOpen: (details) async {
@@ -219,6 +239,29 @@ class AppDatabase extends _$AppDatabase {
 
   Future<int> deleteAttachment(String id) {
     return (delete(attachments)..where((t) => t.id.equals(id))).go();
+  }
+
+  // Soundtracks
+  Future<List<Soundtrack>> getSoundtracksForEntry(String entryId) {
+    return (select(soundtracks)..where((t) => t.entryId.equals(entryId))).get();
+  }
+
+  Stream<List<Soundtrack>> watchSoundtracksForEntry(String entryId) {
+    return (select(
+      soundtracks,
+    )..where((t) => t.entryId.equals(entryId))).watch();
+  }
+
+  Future<int> insertOrUpdateSoundtrack(SoundtracksCompanion soundtrack) {
+    return into(soundtracks).insertOnConflictUpdate(soundtrack);
+  }
+
+  Future<int> deleteSoundtrack(String id) {
+    return (delete(soundtracks)..where((t) => t.id.equals(id))).go();
+  }
+
+  Future<int> deleteSoundtracksForEntry(String entryId) {
+    return (delete(soundtracks)..where((t) => t.entryId.equals(entryId))).go();
   }
 
   // Collections

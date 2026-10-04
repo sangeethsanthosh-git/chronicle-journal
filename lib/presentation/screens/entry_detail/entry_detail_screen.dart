@@ -11,6 +11,9 @@ import '../../../core/widgets/mood_badge.dart';
 import '../../../core/widgets/paper_background.dart';
 import '../../../core/widgets/polaroid_card.dart';
 import '../../../core/widgets/postal_stamp.dart';
+import '../../../features/soundtrack/domain/models/now_playing.dart';
+import '../../../features/soundtrack/domain/models/soundtrack_card_style.dart';
+import '../../../features/soundtrack/presentation/widgets/soundtrack_card.dart';
 import '../../providers/database_provider.dart';
 import '../../providers/journal_providers.dart';
 
@@ -288,6 +291,47 @@ class EntryDetailScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
                   ...entryWithDetails.audioAttachments.map(
                     (audio) => AudioPlayerWidget(audioPath: audio.uri),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+
+                // Soundtrack Memory
+                if (entryWithDetails.soundtracks.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Soundtrack Memory',
+                    style: TextStyle(
+                      fontFamily: 'serif',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Center(
+                    child: SoundtrackCard(
+                      track: NowPlaying(
+                        title: entryWithDetails.soundtracks.first.title,
+                        artist: entryWithDetails.soundtracks.first.artist,
+                        album: entryWithDetails.soundtracks.first.album,
+                        artworkUri:
+                            entryWithDetails.soundtracks.first.artworkUri,
+                        applicationName:
+                            entryWithDetails.soundtracks.first.applicationName,
+                        duration:
+                            entryWithDetails.soundtracks.first.durationMs !=
+                                null
+                            ? Duration(
+                                milliseconds: entryWithDetails
+                                    .soundtracks
+                                    .first
+                                    .durationMs!,
+                              )
+                            : null,
+                        capturedAt:
+                            entryWithDetails.soundtracks.first.capturedAt,
+                      ),
+                      style: SoundtrackCardStyle.cassette,
+                    ),
                   ),
                   const SizedBox(height: 20),
                 ],

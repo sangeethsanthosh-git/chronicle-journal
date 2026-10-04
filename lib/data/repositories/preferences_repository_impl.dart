@@ -15,6 +15,7 @@ class PreferencesRepositoryImpl implements PreferencesRepository {
   static const _keyMinute = 'reminder_minute';
   static const _keyOnboarding = 'onboarding_completed';
   static const _keyQuotes = 'show_quotes';
+  static const _keyMusicIntegration = 'music_integration_enabled';
 
   @override
   Future<UserPreferences> loadPreferences() async {
@@ -43,6 +44,7 @@ class PreferencesRepositoryImpl implements PreferencesRepository {
       reminderMinute: sp.getInt(_keyMinute) ?? 0,
       isOnboardingCompleted: sp.getBool(_keyOnboarding) ?? false,
       showQuotes: sp.getBool(_keyQuotes) ?? true,
+      isMusicIntegrationEnabled: sp.getBool(_keyMusicIntegration) ?? false,
     );
   }
 
@@ -99,5 +101,11 @@ class PreferencesRepositoryImpl implements PreferencesRepository {
   Future<void> setShowQuotes(bool show) async {
     final sp = await SharedPreferences.getInstance();
     await sp.setBool(_keyQuotes, show);
+  }
+
+  @override
+  Future<void> setMusicIntegrationEnabled(bool enabled) async {
+    final sp = await SharedPreferences.getInstance();
+    await sp.setBool(_keyMusicIntegration, enabled);
   }
 }

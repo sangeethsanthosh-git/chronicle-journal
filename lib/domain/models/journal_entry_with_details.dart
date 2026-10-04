@@ -7,12 +7,17 @@ class JournalEntryWithDetails {
   final JournalEntry entry;
   final List<Tag> tags;
   final List<Attachment> attachments;
+  final List<Soundtrack> soundtracks;
 
   JournalEntryWithDetails({
     required this.entry,
     this.tags = const [],
     this.attachments = const [],
+    this.soundtracks = const [],
   });
+
+  Soundtrack? get primarySoundtrack =>
+      soundtracks.isNotEmpty ? soundtracks.first : null;
 
   Mood get mood => Mood.fromString(entry.mood);
   PaperStyle get paperStyle => PaperStyle.fromString(entry.paperStyle);

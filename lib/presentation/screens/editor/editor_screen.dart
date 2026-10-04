@@ -20,6 +20,10 @@ import '../../../core/widgets/paper_background.dart';
 import '../../../domain/models/journal_layout.dart';
 import '../../../domain/models/mood.dart';
 import '../../../domain/models/paper_style.dart';
+import '../../../features/soundtrack/domain/models/now_playing.dart';
+import '../../../features/soundtrack/domain/models/soundtrack_card_style.dart';
+import '../../../features/soundtrack/presentation/widgets/attach_soundtrack_dialog.dart';
+import '../../../features/soundtrack/presentation/widgets/soundtrack_card.dart';
 import '../../providers/database_provider.dart';
 import '../../providers/preferences_provider.dart';
 
@@ -57,6 +61,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   final List<String> _photoPaths = [];
   final List<String> _audioPaths = [];
   final List<String> _selectedTagIds = [];
+  NowPlaying? _attachedSoundtrack;
+  SoundtrackCardStyle _soundtrackStyle = SoundtrackCardStyle.cassette;
 
   bool _isRecording = false;
   int _recordingSeconds = 0;
@@ -106,6 +112,20 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         _photoPaths.addAll(details.photoAttachments.map((a) => a.uri));
         _audioPaths.addAll(details.audioAttachments.map((a) => a.uri));
         _selectedTagIds.addAll(details.tags.map((t) => t.id));
+        if (details.soundtracks.isNotEmpty) {
+          final s = details.soundtracks.first;
+          _attachedSoundtrack = NowPlaying(
+            title: s.title,
+            artist: s.artist,
+            album: s.album,
+            artworkUri: s.artworkUri,
+            applicationName: s.applicationName,
+            duration: s.durationMs != null
+                ? Duration(milliseconds: s.durationMs!)
+                : null,
+            capturedAt: s.capturedAt,
+          );
+        }
       }
     } else {
       // Restore draft if exists
@@ -214,6 +234,98 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     }
   }
 
+  Future<void> _attachMusic() async {
+    final track = await AttachSoundtrackDialog.show(context);
+    if (track != null && mounted) {
+      setState(() => _attachedSoundtrack = track);
+    }
+  }
+
+  void _showAddToEntrySheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Text(
+                    '+ ADD TO ENTRY',
+                    style: TextStyle(
+                      fontFamily: 'serif',
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                      color: AppColors.vintageGold,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_camera_outlined),
+                  title: const Text('📷 Photo'),
+                  subtitle: const Text('Attach photo or polaroid memory'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickPhoto(ImageSource.gallery);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.music_note_rounded,
+                    color: AppColors.vintageGold,
+                  ),
+                  title: const Text('🎵 Current Music'),
+                  subtitle: const Text(
+                    'Detect & attach current media soundtrack',
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _attachMusic();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.mood_rounded),
+                  title: const Text('😊 Mood'),
+                  subtitle: const Text('Set emotional state and intensity'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showMoodSheet();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.location_on_outlined),
+                  title: const Text('📍 Location'),
+                  subtitle: const Text('Refresh current place and weather'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _fetchLocationAndWeather();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.mic_none_rounded),
+                  title: const Text('🎙 Voice Memo'),
+                  subtitle: const Text('Record audio reflection'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _toggleAudioRecording();
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _saveEntry() async {
     final content = _contentController.text.trim();
     if (content.isEmpty &&
@@ -245,6 +357,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       tagIds: _selectedTagIds,
       photoPaths: _photoPaths,
       audioPaths: _audioPaths,
+      soundtrack: _attachedSoundtrack,
     );
 
     // Clear draft
@@ -292,6 +405,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       tagIds: _selectedTagIds,
       photoPaths: _photoPaths,
       audioPaths: _audioPaths,
+      soundtrack: _attachedSoundtrack,
     );
 
     if (widget.entryId == null) {
@@ -641,6 +755,21 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                       );
                     }),
                   ],
+
+                  // Attached Soundtrack Preview
+                  if (_attachedSoundtrack != null) ...[
+                    const SizedBox(height: 16),
+                    Center(
+                      child: SoundtrackCard(
+                        track: _attachedSoundtrack!,
+                        style: _soundtrackStyle,
+                        onDelete: () =>
+                            setState(() => _attachedSoundtrack = null),
+                        onStyleChanged: (newStyle) =>
+                            setState(() => _soundtrackStyle = newStyle),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -662,6 +791,46 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               ),
               child: Row(
                 children: [
+                  OutlinedButton.icon(
+                    onPressed: _showAddToEntrySheet,
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      side: BorderSide(
+                        color: AppColors.vintageGold.withValues(alpha: 0.6),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    icon: const Icon(
+                      Icons.add_rounded,
+                      size: 16,
+                      color: AppColors.vintageGold,
+                    ),
+                    label: const Text(
+                      'Add',
+                      style: TextStyle(
+                        fontFamily: 'serif',
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.vintageGold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  IconButton(
+                    icon: Icon(
+                      Icons.music_note_rounded,
+                      color: _attachedSoundtrack != null
+                          ? AppColors.vintageGold
+                          : null,
+                    ),
+                    tooltip: 'Attach Current Music',
+                    onPressed: _attachMusic,
+                  ),
                   IconButton(
                     icon: const Icon(Icons.camera_alt_outlined),
                     tooltip: 'Take Photo',

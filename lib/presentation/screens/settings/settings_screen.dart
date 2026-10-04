@@ -9,6 +9,7 @@ import '../../../core/utils/pdf_exporter.dart';
 import '../../../core/widgets/paper_background.dart';
 import '../../../domain/models/journal_layout.dart';
 import '../../../domain/models/paper_style.dart';
+import '../../../features/soundtrack/presentation/providers/soundtrack_providers.dart';
 import '../../providers/database_provider.dart';
 import '../../providers/desk_theme_provider.dart';
 import '../../providers/preferences_provider.dart';
@@ -312,6 +313,166 @@ class SettingsScreen extends ConsumerWidget {
                             minute: picked.minute,
                           );
                         }
+                      },
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Integrations Section
+            _buildSectionHeader('Integrations'),
+            Card(
+              child: Column(
+                children: [
+                  SwitchListTile(
+                    secondary: const Icon(Icons.music_note_outlined),
+                    title: const Text(
+                      'Detect currently playing music',
+                      style: TextStyle(fontFamily: 'serif'),
+                    ),
+                    subtitle: const Text(
+                      'Journal can optionally read information about the music currently playing on your device so you can attach it to your memories.',
+                    ),
+                    value: prefs.isMusicIntegrationEnabled,
+                    onChanged: (val) async {
+                      await ref
+                          .read(preferencesProvider.notifier)
+                          .setMusicIntegrationEnabled(val);
+                      if (val) {
+                        final musicService = ref.read(musicServiceProvider);
+                        final hasPerm = await musicService.hasPermission();
+                        if (!hasPerm && context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text(
+                                'Android requires Notification Access to detect media playback. Enable Chronicle in system settings.',
+                              ),
+                              action: SnackBarAction(
+                                label: 'Settings',
+                                onPressed: () =>
+                                    musicService.requestPermission(),
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                  ),
+                  if (prefs.isMusicIntegrationEnabled) ...[
+                    const Divider(height: 1),
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final availAsync = ref.watch(musicAvailabilityProvider);
+                        final permAsync = ref.watch(musicPermissionProvider);
+
+                        final isAvailable = availAsync.value ?? true;
+                        final hasPermission = permAsync.value ?? false;
+
+                        if (!isAvailable) {
+                          return const ListTile(
+                            leading: Icon(
+                              Icons.info_outline,
+                              color: Colors.orange,
+                            ),
+                            title: Text("Music detection isn't available."),
+                            subtitle: Text(
+                              'Media session inspection is only supported on Android devices.',
+                            ),
+                          );
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    hasPermission
+                                        ? Icons.check_circle_outline
+                                        : Icons.warning_amber_rounded,
+                                    size: 18,
+                                    color: hasPermission
+                                        ? Colors.green
+                                        : Colors.orange,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      hasPermission
+                                          ? 'Notification access granted. Ready to detect tracks.'
+                                          : 'Notification access required by Android to read active media sessions.',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: hasPermission
+                                            ? Colors.green
+                                            : Colors.orange,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  if (!hasPermission)
+                                    OutlinedButton.icon(
+                                      onPressed: () {
+                                        ref
+                                            .read(musicServiceProvider)
+                                            .requestPermission();
+                                      },
+                                      icon: const Icon(
+                                        Icons.settings_outlined,
+                                        size: 16,
+                                      ),
+                                      label: const Text(
+                                        'Grant Access in Settings',
+                                      ),
+                                    ),
+                                  ElevatedButton.icon(
+                                    onPressed: () async {
+                                      final track = await ref
+                                          .read(musicServiceProvider)
+                                          .getCurrentTrack();
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              track != null
+                                                  ? 'Now Playing: ${track.title} by ${track.artist ?? "Unknown"}'
+                                                  : 'No active media session detected right now.',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.vintageGold,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    icon: const Icon(
+                                      Icons.play_circle_outline,
+                                      size: 16,
+                                    ),
+                                    label: const Text('Test Track Detection'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
                       },
                     ),
                   ],

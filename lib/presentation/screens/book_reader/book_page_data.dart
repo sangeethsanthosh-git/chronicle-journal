@@ -1,6 +1,7 @@
 import '../../../core/widgets/book_margin_doodles.dart';
 import '../../../domain/models/journal_entry_with_details.dart';
 import '../../../domain/models/mood.dart';
+import '../../../features/soundtrack/domain/models/now_playing.dart';
 
 enum BookPageType {
   chapterOpening,
@@ -18,6 +19,7 @@ class BookPageData {
   final bool hasDropCap;
   final String? photoPath;
   final String? audioPath;
+  final NowPlaying? soundtrack;
   final DateTime date;
   final String? location;
   final String? weather;
@@ -37,6 +39,7 @@ class BookPageData {
     this.hasDropCap = false,
     this.photoPath,
     this.audioPath,
+    this.soundtrack,
     required this.date,
     this.location,
     this.weather,
@@ -56,6 +59,23 @@ class BookPaginator {
     final photos = entryWithDetails.photoAttachments;
     final audios = entryWithDetails.audioAttachments;
     final tags = entryWithDetails.tags.map((t) => t.name).toList();
+
+    final primarySoundtrack = entryWithDetails.soundtracks.isNotEmpty
+        ? NowPlaying(
+            title: entryWithDetails.soundtracks.first.title,
+            artist: entryWithDetails.soundtracks.first.artist,
+            album: entryWithDetails.soundtracks.first.album,
+            artworkUri: entryWithDetails.soundtracks.first.artworkUri,
+            applicationName: entryWithDetails.soundtracks.first.applicationName,
+            duration: entryWithDetails.soundtracks.first.durationMs != null
+                ? Duration(
+                    milliseconds:
+                        entryWithDetails.soundtracks.first.durationMs!,
+                  )
+                : null,
+            capturedAt: entryWithDetails.soundtracks.first.capturedAt,
+          )
+        : null;
 
     final rawContent = entry.content.trim();
     final paragraphs = rawContent.isEmpty
@@ -182,7 +202,33 @@ class BookPaginator {
           moodIntensity: entry.moodIntensity,
           tags: tags,
           isFavorite: entry.isFavorite,
+          soundtrack: primarySoundtrack,
           doodle: BookDoodleType.boombox,
+        ),
+      );
+    } else if (primarySoundtrack != null && pages.isNotEmpty) {
+      // If multiple pages, attach soundtrack to the last page
+      final last = pages.removeLast();
+      pages.add(
+        BookPageData(
+          pageNumber: last.pageNumber,
+          totalPages: last.totalPages,
+          type: last.type,
+          title: last.title,
+          text: last.text,
+          hasDropCap: last.hasDropCap,
+          photoPath: last.photoPath,
+          audioPath: last.audioPath,
+          soundtrack: primarySoundtrack,
+          date: last.date,
+          location: last.location,
+          weather: last.weather,
+          mood: last.mood,
+          moodIntensity: last.moodIntensity,
+          tags: last.tags,
+          isFavorite: last.isFavorite,
+          doodle: last.doodle,
+          caption: last.caption,
         ),
       );
     }
