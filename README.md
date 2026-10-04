@@ -20,15 +20,17 @@ Chronicle is **strictly offline-first and private**: zero tracking, zero mandato
 - **Photographs & Polaroids:** Modern Android Photo Picker and Camera integration. Photos are rendered in classic polaroid frames, taped scrapbook snapshots, or editorial layouts.
 - **Voice Memos & Audio Player:** Built-in high-fidelity audio recorder (MPEG-4 / AAC) with a live timer, accompanied by an integrated playback bar with scrub position tracking.
 
-### 3. 🎨 5 Visual Journal Modes
+### 3. 🎨 7 Visual Journal Modes
 - **Classic:** Elegant typography with balanced margins, date postmarks, and subtle shadows.
 - **Scrapbook:** Layered paper clippings, washi tape strips at varied angles, and nostalgic stickers.
 - **Postcard:** Vintage postcard layout with stamped postage cancellation marks, dividers, and postal codes.
+- **Ring Binder:** Authentic open dual-page notebook with metallic center binder rings, torn paper notes, polaroid snapshots, and reminder ribbon.
+- **Sanctuary Panorama:** Panoramic editorial card featuring 3 curved triptych photo frames, location tag pill, action chips, and embedded mini-calendar widget.
 - **Minimal:** Clean, distraction-free typographic layout focused strictly on words.
-- **Photo Diary:** Visual-first feed emphasizing photography with handwritten caption notes underneath.
+- **Photo Story:** Visual-first feed emphasizing photography with handwritten caption notes underneath.
 
 ### 4. 🧭 Journal Timeline & Interactive Calendar
-- **Chronological Timeline:** Switch between Card, Scrapbook, Postcard, and Compact List views.
+- **Chronological Timeline:** Switch between Cards, Scrapbook, Postcards, Open Binder, Panorama, and Compact List views.
 - **Sorting & Filtering:** Sort by newest, oldest, or recently edited. Filter instantly by mood, tags, favorites, photos, or voice recordings.
 - **Calendar Browser:** Interactive month view highlighting days with entries and mood dots.
 

@@ -358,7 +358,26 @@ fun EntryDetailScreen(
                     }
 
                     item {
-                        Spacer(modifier = Modifier.height(40.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = "reminder: progress matters more than perfection.",
+                                fontSize = 11.sp,
+                                fontFamily = FontFamily.Serif,
+                                color = colors.inkMuted,
+                            )
+                            Text(
+                                text = "0 ${details.entry.id % 100}",
+                                fontSize = 11.sp,
+                                fontFamily = FontFamily.Monospace,
+                                color = colors.inkMuted,
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(30.dp))
                     }
                 }
             }

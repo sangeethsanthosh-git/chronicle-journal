@@ -306,6 +306,8 @@ fun JournalTimelineScreen(
                                 when (state.viewMode) {
                                     TimelineViewMode.SCRAPBOOK -> JournalLayout.SCRAPBOOK
                                     TimelineViewMode.POSTCARD -> JournalLayout.POSTCARD
+                                    TimelineViewMode.BINDER -> JournalLayout.OPEN_BINDER
+                                    TimelineViewMode.PANORAMA -> JournalLayout.PANORAMA_EDITORIAL
                                     TimelineViewMode.LIST -> JournalLayout.MINIMAL
                                     TimelineViewMode.CARD -> null // respects entry's own layout style
                                 }

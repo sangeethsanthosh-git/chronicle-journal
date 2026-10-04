@@ -40,6 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -49,6 +50,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.chronicle.journal.core.designsystem.components.EmptyState
 import com.chronicle.journal.core.designsystem.components.JournalCard
 import com.chronicle.journal.core.designsystem.components.SectionHeader
+import com.chronicle.journal.core.designsystem.components.StickerBadge
 import com.chronicle.journal.core.designsystem.components.WashiTape
 import com.chronicle.journal.core.designsystem.theme.HandwrittenCaptionStyle
 import com.chronicle.journal.core.designsystem.theme.LocalChronicleColors
@@ -162,31 +164,45 @@ fun HomeScreen(
                                 lineHeight = 22.sp,
                             )
 
-                            // Streak Pill
-                            if (state.streakInfo.currentStreak > 0) {
-                                Spacer(modifier = Modifier.height(10.dp))
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                    modifier =
-                                        Modifier
-                                            .background(colors.paperSurface, RoundedCornerShape(12.dp))
-                                            .padding(horizontal = 10.dp, vertical = 4.dp),
-                                ) {
-                                    Text(
-                                        text = "🔥 ${state.streakInfo.currentStreak} day streak",
-                                        fontFamily = FontFamily.Monospace,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = VintageGold,
-                                    )
-                                    Text(
-                                        text = "• ${state.streakInfo.totalActiveDays} days penned",
-                                        fontFamily = FontFamily.Monospace,
-                                        fontSize = 11.sp,
-                                        color = colors.inkMuted,
-                                    )
+                            // Streak & Affirmation Sticker Row
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                if (state.streakInfo.currentStreak > 0) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        modifier =
+                                            Modifier
+                                                .background(colors.paperSurface, RoundedCornerShape(12.dp))
+                                                .padding(horizontal = 10.dp, vertical = 4.dp),
+                                    ) {
+                                        Text(
+                                            text = "🔥 ${state.streakInfo.currentStreak} day streak",
+                                            fontFamily = FontFamily.Monospace,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = VintageGold,
+                                        )
+                                        Text(
+                                            text = "• ${state.streakInfo.totalActiveDays} days penned",
+                                            fontFamily = FontFamily.Monospace,
+                                            fontSize = 11.sp,
+                                            color = colors.inkMuted,
+                                        )
+                                    }
+                                } else {
+                                    Spacer(modifier = Modifier.width(1.dp))
                                 }
+
+                                StickerBadge(
+                                    text = "YOU ARE NOT ALONE",
+                                    backgroundColor = Color(0xFF2563EB),
+                                    rotationDegrees = -2f,
+                                )
                             }
                         }
                     }

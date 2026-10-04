@@ -23,6 +23,8 @@ enum class TimelineViewMode(
     CARD("Cards"),
     SCRAPBOOK("Scrapbook"),
     POSTCARD("Postcards"),
+    BINDER("Open Binder"),
+    PANORAMA("Panorama"),
     LIST("Compact List"),
 }
 

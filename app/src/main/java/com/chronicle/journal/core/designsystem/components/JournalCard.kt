@@ -86,6 +86,22 @@ fun JournalCard(
                 onClick = onClick,
             )
         }
+        JournalLayout.OPEN_BINDER -> {
+            OpenBinderCard(
+                details = details,
+                modifier = modifier,
+                onFavoriteToggle = onFavoriteToggle,
+                onClick = onClick,
+            )
+        }
+        JournalLayout.PANORAMA_EDITORIAL -> {
+            PanoramaEditorialCard(
+                details = details,
+                modifier = modifier,
+                onFavoriteToggle = onFavoriteToggle,
+                onClick = onClick,
+            )
+        }
         JournalLayout.CLASSIC -> {
             ClassicJournalCard(
                 details = details,
