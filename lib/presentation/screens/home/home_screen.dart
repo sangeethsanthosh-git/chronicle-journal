@@ -7,8 +7,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/mood_badge.dart';
 import '../../../core/widgets/paper_background.dart';
 import '../../../core/widgets/washi_tape.dart';
-import '../../../features/world/presentation/screens/cozy_study_world_screen.dart';
-import '../../providers/home_view_mode_provider.dart';
 import '../../providers/journal_providers.dart';
 import '../../providers/memories_provider.dart';
 import '../../providers/preferences_provider.dart';
@@ -27,19 +25,6 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewMode = ref.watch(homeViewModeProvider);
-
-    // If in living study mode, render the interactive 2D study world!
-    if (viewMode == HomeViewMode.study) {
-      return CozyStudyWorldScreen(
-        onToggleOverview: () {
-          ref
-              .read(homeViewModeProvider.notifier)
-              .setMode(HomeViewMode.overview);
-        },
-      );
-    }
-
     final prefs = ref.watch(preferencesProvider);
     final todayEntry = ref.watch(todayEntryProvider);
     final stats = ref.watch(statisticsProvider);
@@ -65,15 +50,6 @@ class HomeScreen extends ConsumerWidget {
             ),
           ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.cottage_outlined),
-              tooltip: 'Return to Study Sanctuary',
-              onPressed: () {
-                ref
-                    .read(homeViewModeProvider.notifier)
-                    .setMode(HomeViewMode.study);
-              },
-            ),
             IconButton(
               icon: const Icon(Icons.auto_stories_rounded),
               tooltip: 'Read Journal as Book',

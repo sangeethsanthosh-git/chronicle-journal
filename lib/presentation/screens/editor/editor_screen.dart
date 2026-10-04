@@ -20,8 +20,6 @@ import '../../../core/widgets/paper_background.dart';
 import '../../../domain/models/journal_layout.dart';
 import '../../../domain/models/mood.dart';
 import '../../../domain/models/paper_style.dart';
-import '../../../features/companion/providers/companion_provider.dart';
-import '../../../features/progression/providers/progression_provider.dart';
 import '../../providers/database_provider.dart';
 import '../../providers/preferences_provider.dart';
 
@@ -248,16 +246,6 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       photoPaths: _photoPaths,
       audioPaths: _audioPaths,
     );
-
-    // Award Thought XP for Living Sanctuary progression
-    ref.read(userProgressProvider.notifier).recordEntryWritten();
-    if (_photoPaths.isNotEmpty) {
-      ref.read(userProgressProvider.notifier).recordPhotoSaved();
-    }
-    if (_audioPaths.isNotEmpty) {
-      ref.read(userProgressProvider.notifier).recordVoiceReflection();
-    }
-    ref.read(companionProvider.notifier).celebrateMemory();
 
     // Clear draft
     if (widget.entryId == null) {

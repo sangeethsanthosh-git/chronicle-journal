@@ -18,7 +18,6 @@ import '../screens/search/search_screen.dart';
 import '../screens/settings/settings_screen.dart';
 import '../screens/shell/navigation_shell.dart';
 import '../screens/timeline/timeline_screen.dart';
-import '../../features/scrapbook/presentation/screens/scrapbook_studio_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -138,11 +137,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final id = state.pathParameters['id']!;
           return CollectionDetailScreen(collectionId: id);
         },
-      ),
-      GoRoute(
-        path: '/scrapbook',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const ScrapbookStudioScreen(),
       ),
       GoRoute(
         path: '/lock',
