@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -1001,16 +1001,16 @@ class SettingsScreen extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    Row(
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
-                        if (!hasPermission) ...[
+                        if (!hasPermission)
                           OutlinedButton.icon(
                             onPressed: () => ref.read(musicServiceProvider).requestPermission(),
                             icon: const Icon(Icons.settings_outlined, size: 15),
                             label: const Text('Grant Access', style: TextStyle(fontSize: 12)),
                           ),
-                          const SizedBox(width: 8),
-                        ],
                         ElevatedButton.icon(
                           onPressed: () async {
                             final track = await ref.read(musicServiceProvider).getCurrentTrack();
@@ -1263,15 +1263,29 @@ class SettingsScreen extends ConsumerWidget {
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: AppColors.vintageGold.withAlpha(25),
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(25),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
-            child: const Icon(
-              Icons.menu_book_rounded,
-              color: AppColors.vintageGold,
-              size: 24,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                'assets/app_icon.png',
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.menu_book_rounded,
+                  color: AppColors.vintageGold,
+                  size: 24,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 8),

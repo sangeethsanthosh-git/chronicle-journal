@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -78,66 +78,82 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   itemCount: _pages.length,
                   itemBuilder: (context, index) {
                     final item = _pages[index];
-                    return Padding(
-                      padding: const EdgeInsets.all(28),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Stack(
-                            clipBehavior: Clip.none,
-                            alignment: Alignment.center,
-                            children: [
-                              Container(
-                                width: 220,
-                                height: 220,
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? AppColors.paperCardDark
-                                      : AppColors.paperCardLight,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
+                    return Center(
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Stack(
+                              clipBehavior: Clip.none,
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  width: 180,
+                                  height: 180,
+                                  decoration: BoxDecoration(
                                     color: isDark
-                                        ? AppColors.paperCardBorderDark
-                                        : AppColors.paperCardBorderLight,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withAlpha(25),
-                                      blurRadius: 10,
-                                      offset: const Offset(2, 6),
+                                        ? AppColors.paperCardDark
+                                        : AppColors.paperCardLight,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: isDark
+                                          ? AppColors.paperCardBorderDark
+                                          : AppColors.paperCardBorderLight,
                                     ),
-                                  ],
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withAlpha(25),
+                                        blurRadius: 10,
+                                        offset: const Offset(2, 6),
+                                      ),
+                                    ],
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: index == 0
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadius.circular(16),
+                                          child: Image.asset(
+                                            'assets/app_icon.png',
+                                            width: 110,
+                                            height: 110,
+                                            fit: BoxFit.contain,
+                                          ),
+                                        )
+                                      : Text(
+                                          item['emoji']!,
+                                          style: const TextStyle(fontSize: 64),
+                                        ),
                                 ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  item['emoji']!,
-                                  style: const TextStyle(fontSize: 72),
+                                const Positioned(
+                                  top: -10,
+                                  right: 20,
+                                  child: WashiTape(
+                                    width: 80,
+                                    height: 22,
+                                    color: AppColors.washiTapeSage,
+                                  ),
                                 ),
-                              ),
-                              const Positioned(
-                                top: -10,
-                                right: 20,
-                                child: WashiTape(
-                                  width: 80,
-                                  height: 22,
-                                  color: AppColors.washiTapeSage,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 40),
-                          Text(
-                            item['title']!,
-                            style: const TextStyle(
-                              fontFamily: 'serif',
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
+                              ],
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 14),
-                          Text(
-                            item['subtitle']!,
+                            const SizedBox(height: 32),
+                            Text(
+                              item['title']!,
+                              style: const TextStyle(
+                                fontFamily: 'serif',
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              item['subtitle']!,
                             style: TextStyle(
                               fontFamily: 'serif',
                               fontSize: 14,
@@ -148,7 +164,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             ),
                             textAlign: TextAlign.center,
                           ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },

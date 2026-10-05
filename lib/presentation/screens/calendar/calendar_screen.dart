@@ -60,137 +60,177 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             final selectedKey = DateFormat('yyyy-MM-dd').format(_selectedDay);
             final dayEntries = entryMap[selectedKey] ?? [];
 
-            return Column(
-              children: [
-                // Month Header Navigator
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.chevron_left_rounded),
-                        onPressed: () {
-                          setState(() {
-                            _focusedMonth = DateTime(
-                              _focusedMonth.year,
-                              _focusedMonth.month - 1,
-                            );
-                          });
-                        },
-                      ),
-                      Text(
-                        DateFormat('MMMM yyyy').format(_focusedMonth),
-                        style: const TextStyle(
-                          fontFamily: 'serif',
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.chevron_right_rounded),
-                        onPressed: () {
-                          setState(() {
-                            _focusedMonth = DateTime(
-                              _focusedMonth.year,
-                              _focusedMonth.month + 1,
-                            );
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ),
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final isShort = constraints.maxHeight < 620;
 
-                // Days of week header
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) {
-                      return SizedBox(
-                        width: 36,
-                        child: Text(
-                          day,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
+                final headerSection = [
+                  // Month Header Navigator
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.chevron_left_rounded),
+                          onPressed: () {
+                            setState(() {
+                              _focusedMonth = DateTime(
+                                _focusedMonth.year,
+                                _focusedMonth.month - 1,
+                              );
+                            });
+                          },
+                        ),
+                        Text(
+                          DateFormat('MMMM yyyy').format(_focusedMonth),
+                          style: const TextStyle(
                             fontFamily: 'serif',
-                            fontSize: 13,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: isDark
-                                ? AppColors.inkMutedDark
-                                : AppColors.inkMutedLight,
                           ),
                         ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // Calendar Grid
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _buildCalendarGrid(entryMap, isDark),
-                ),
-
-                const Divider(height: 24),
-
-                // Selected Day Header & Entries
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        DateFormat('EEEE, MMM d').format(_selectedDay),
-                        style: const TextStyle(
-                          fontFamily: 'serif',
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                        IconButton(
+                          icon: const Icon(Icons.chevron_right_rounded),
+                          onPressed: () {
+                            setState(() {
+                              _focusedMonth = DateTime(
+                                _focusedMonth.year,
+                                _focusedMonth.month + 1,
+                              );
+                            });
+                          },
                         ),
-                      ),
-                      TextButton.icon(
-                        icon: const Icon(Icons.add, size: 16),
-                        label: const Text('Add Entry'),
-                        onPressed: () {
-                          final dateStr = _selectedDay.toIso8601String();
-                          context.push('/editor?initialDate=$dateStr');
-                        },
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
 
-                Expanded(
-                  child: dayEntries.isEmpty
-                      ? Center(
+                  // Days of week header
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) {
+                        return SizedBox(
+                          width: 36,
                           child: Text(
-                            'No entries for this day.',
+                            day,
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               fontFamily: 'serif',
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
                               color: isDark
                                   ? AppColors.inkMutedDark
                                   : AppColors.inkMutedLight,
                             ),
                           ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.only(bottom: 24),
-                          itemCount: dayEntries.length,
-                          itemBuilder: (context, index) {
-                            return EntryCard(
-                              entryWithDetails: dayEntries[index],
-                              layout: prefs.defaultLayout,
-                            );
+                        );
+                      }).toList(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Calendar Grid
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: _buildCalendarGrid(entryMap, isDark),
+                  ),
+
+                  const Divider(height: 24),
+
+                  // Selected Day Header & Entries
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          DateFormat('EEEE, MMM d').format(_selectedDay),
+                          style: const TextStyle(
+                            fontFamily: 'serif',
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        TextButton.icon(
+                          icon: const Icon(Icons.add, size: 16),
+                          label: const Text('Add Entry'),
+                          onPressed: () {
+                            final dateStr = _selectedDay.toIso8601String();
+                            context.push('/editor?initialDate=$dateStr');
                           },
                         ),
-                ),
-              ],
+                      ],
+                    ),
+                  ),
+                ];
+
+                if (isShort) {
+                  return ListView(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    children: [
+                      ...headerSection,
+                      if (dayEntries.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Center(
+                            child: Text(
+                              'No entries for this day.',
+                              style: TextStyle(
+                                fontFamily: 'serif',
+                                color: isDark
+                                    ? AppColors.inkMutedDark
+                                    : AppColors.inkMutedLight,
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        ...dayEntries.map(
+                          (e) => EntryCard(
+                            entryWithDetails: e,
+                            layout: prefs.defaultLayout,
+                          ),
+                        ),
+                    ],
+                  );
+                }
+
+                return Column(
+                  children: [
+                    ...headerSection,
+                    Expanded(
+                      child: dayEntries.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No entries for this day.',
+                                style: TextStyle(
+                                  fontFamily: 'serif',
+                                  color: isDark
+                                      ? AppColors.inkMutedDark
+                                      : AppColors.inkMutedLight,
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.only(bottom: 24),
+                              itemCount: dayEntries.length,
+                              itemBuilder: (context, index) {
+                                return EntryCard(
+                                  entryWithDetails: dayEntries[index],
+                                  layout: prefs.defaultLayout,
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                );
+              },
             );
           },
           loading: () => const Center(child: CircularProgressIndicator()),

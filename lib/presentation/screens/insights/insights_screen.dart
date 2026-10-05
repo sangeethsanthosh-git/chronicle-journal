@@ -332,7 +332,7 @@ class InsightsScreen extends ConsumerWidget {
     required bool isDark,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.paperCardDark : AppColors.paperCardLight,
         borderRadius: BorderRadius.circular(12),
@@ -345,22 +345,28 @@ class InsightsScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(icon, style: const TextStyle(fontSize: 22)),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              fontFamily: 'serif',
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
+          Text(icon, style: const TextStyle(fontSize: 20)),
+          const SizedBox(height: 6),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontFamily: 'serif',
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontFamily: 'serif',
-              fontSize: 11,
+              fontSize: 10.5,
               color: isDark
                   ? AppColors.inkSecondaryDark
                   : AppColors.inkSecondaryLight,

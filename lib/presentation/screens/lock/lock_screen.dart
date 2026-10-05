@@ -62,85 +62,107 @@ class _LockScreenState extends ConsumerState<LockScreen> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.vintageGold.withAlpha(40),
-                ),
-                child: const Icon(
-                  Icons.lock_outline,
-                  size: 40,
-                  color: AppColors.vintageGold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                widget.isSettingPin ? 'Set 4-Digit PIN' : 'Miora is Locked',
-                style: TextStyle(
-                  fontFamily: 'serif',
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: isDark
-                      ? AppColors.inkPrimaryDark
-                      : AppColors.inkPrimaryLight,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                widget.isSettingPin
-                    ? 'Choose a memorable 4-digit security code'
-                    : 'Enter your secret PIN to access memories',
-                style: TextStyle(
-                  fontFamily: 'serif',
-                  fontSize: 13,
-                  color: isDark
-                      ? AppColors.inkSecondaryDark
-                      : AppColors.inkSecondaryLight,
-                ),
-              ),
-              const SizedBox(height: 28),
-
-              // PIN Indicator dots
-              Row(
+          child: Center(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(4, (index) {
-                  final isFilled = index < _enteredPin.length;
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 10),
-                    width: 16,
-                    height: 16,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isFilled
-                          ? AppColors.vintageGold
-                          : Colors.transparent,
-                      border: Border.all(
-                        color: isFilled
-                            ? AppColors.vintageGold
-                            : AppColors.paperCardBorderLight,
-                        width: 2,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(30),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.asset(
+                        'assets/app_icon.png',
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          padding: const EdgeInsets.all(14),
+                          color: AppColors.vintageGold.withAlpha(40),
+                          child: const Icon(
+                            Icons.lock_outline,
+                            size: 32,
+                            color: AppColors.vintageGold,
+                          ),
+                        ),
                       ),
                     ),
-                  );
-                }),
-              ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    widget.isSettingPin ? 'Set 4-Digit PIN' : 'Miora is Locked',
+                    style: TextStyle(
+                      fontFamily: 'serif',
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: isDark
+                          ? AppColors.inkPrimaryDark
+                          : AppColors.inkPrimaryLight,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    widget.isSettingPin
+                        ? 'Choose a memorable 4-digit security code'
+                        : 'Enter your secret PIN to access memories',
+                    style: TextStyle(
+                      fontFamily: 'serif',
+                      fontSize: 13,
+                      color: isDark
+                          ? AppColors.inkSecondaryDark
+                          : AppColors.inkSecondaryLight,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
 
-              if (_errorMessage.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Text(
-                  _errorMessage,
-                  style: const TextStyle(color: Colors.red, fontSize: 13),
-                ),
-              ],
+                  // PIN Indicator dots
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(4, (index) {
+                      final isFilled = index < _enteredPin.length;
+                      return Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 10),
+                        width: 16,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isFilled
+                              ? AppColors.vintageGold
+                              : Colors.transparent,
+                          border: Border.all(
+                            color: isFilled
+                                ? AppColors.vintageGold
+                                : AppColors.paperCardBorderLight,
+                            width: 2,
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
 
-              const Spacer(),
+                  if (_errorMessage.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      _errorMessage,
+                      style: const TextStyle(color: Colors.red, fontSize: 13),
+                    ),
+                  ],
 
-              // Keypad
+                  const SizedBox(height: 20),
+
+                  // Keypad
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 40,
@@ -174,12 +196,13 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
             ],
           ),
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildKeypadRow(List<String> digits) {

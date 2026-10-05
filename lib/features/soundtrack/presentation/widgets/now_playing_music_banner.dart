@@ -348,16 +348,21 @@ class _NowPlayingMusicBannerState extends ConsumerState<NowPlayingMusicBanner>
                   ],
                 ),
               ),
-              const SizedBox(width: 6),
-              if (app.isNotEmpty)
-                Text(
-                  '• $app',
-                  style: TextStyle(
-                    fontFamily: 'serif',
-                    fontSize: 9.5,
-                    color: Colors.white.withAlpha(140),
+              if (app.isNotEmpty) ...[
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    '• $app',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'serif',
+                      fontSize: 9.5,
+                      color: Colors.white.withAlpha(140),
+                    ),
                   ),
                 ),
+              ],
               const Spacer(),
               // Equalizer visualizer
               _buildEqualizerBars(height: 14),

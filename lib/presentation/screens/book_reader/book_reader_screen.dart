@@ -594,7 +594,10 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
                               icon: const Icon(
                                 Icons.palette_outlined,
                                 color: Colors.white,
+                                size: 20,
                               ),
+                              padding: const EdgeInsets.all(4),
+                              constraints: const BoxConstraints(),
                               tooltip: 'Switch Aesthetic Mode',
                               onSelected: (style) {
                                 setState(() => _bindingStyle = style);
@@ -624,6 +627,7 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
                                 ),
                               ],
                             ),
+                            const SizedBox(width: 2),
                             // Orientation Switcher (Landscape Spread vs Portrait)
                             IconButton(
                               icon: Icon(
@@ -631,55 +635,146 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen> {
                                     ? Icons.screen_lock_rotation_rounded
                                     : Icons.screen_rotation_rounded,
                                 color: Colors.white,
+                                size: 20,
                               ),
+                              padding: const EdgeInsets.all(4),
+                              constraints: const BoxConstraints(),
                               tooltip: _isLandscape
                                   ? 'Portrait View'
                                   : 'Landscape Mode (Physical Book Spread)',
                               onPressed: _toggleOrientation,
                             ),
-                            // Spread Toggle (Single vs Dual Page)
-                            if (_bindingStyle != ReaderBindingStyle.postcard &&
-                                _bindingStyle !=
-                                    ReaderBindingStyle.physicalStudy)
-                              IconButton(
-                                icon: Icon(
-                                  isWide ? Icons.auto_stories : Icons.menu_book,
-                                  color: Colors.white,
+                            if (screenWidth >= 480) ...[
+                              // Spread Toggle (Single vs Dual Page)
+                              if (_bindingStyle != ReaderBindingStyle.postcard &&
+                                  _bindingStyle !=
+                                      ReaderBindingStyle.physicalStudy)
+                                IconButton(
+                                  icon: Icon(
+                                    isWide ? Icons.auto_stories : Icons.menu_book,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                  padding: const EdgeInsets.all(4),
+                                  constraints: const BoxConstraints(),
+                                  tooltip: isWide
+                                      ? 'Single Page View'
+                                      : 'Two-Page Spread View',
+                                  onPressed: () {
+                                    setState(() {
+                                      _isDualSpread = !_isDualSpread;
+                                      _currentPageIndex = 0;
+                                      _pageController = PageController();
+                                    });
+                                  },
                                 ),
-                                tooltip: isWide
-                                    ? 'Single Page View'
-                                    : 'Two-Page Spread View',
-                                onPressed: () {
-                                  setState(() {
-                                    _isDualSpread = !_isDualSpread;
-                                    _currentPageIndex = 0;
-                                    _pageController = PageController();
-                                  });
+                              // Table of Contents
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.list_alt_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                padding: const EdgeInsets.all(4),
+                                constraints: const BoxConstraints(),
+                                tooltip: 'Table of Contents',
+                                onPressed: () => _showTableOfContents(
+                                  context,
+                                  entries,
+                                  bookPages,
+                                ),
+                              ),
+                              // Export to PDF
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.picture_as_pdf_outlined,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                padding: const EdgeInsets.all(4),
+                                constraints: const BoxConstraints(),
+                                tooltip: 'Export Journal Book as PDF',
+                                onPressed: () =>
+                                    PdfExporter.exportEntriesToPdf([activeEntry]),
+                              ),
+                            ] else ...[
+                              // Responsive overflow menu for compact screens
+                              PopupMenuButton<String>(
+                                icon: const Icon(
+                                  Icons.more_vert_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                padding: const EdgeInsets.all(4),
+                                constraints: const BoxConstraints(),
+                                tooltip: 'More Options',
+                                onSelected: (action) {
+                                  if (action == 'toc') {
+                                    _showTableOfContents(
+                                      context,
+                                      entries,
+                                      bookPages,
+                                    );
+                                  } else if (action == 'pdf') {
+                                    PdfExporter.exportEntriesToPdf([activeEntry]);
+                                  } else if (action == 'spread') {
+                                    setState(() {
+                                      _isDualSpread = !_isDualSpread;
+                                      _currentPageIndex = 0;
+                                      _pageController = PageController();
+                                    });
+                                  }
                                 },
+                                itemBuilder: (context) => [
+                                  if (_bindingStyle !=
+                                          ReaderBindingStyle.postcard &&
+                                      _bindingStyle !=
+                                          ReaderBindingStyle.physicalStudy)
+                                    PopupMenuItem(
+                                      value: 'spread',
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            isWide
+                                                ? Icons.auto_stories
+                                                : Icons.menu_book,
+                                            size: 18,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            isWide
+                                                ? 'Single Page View'
+                                                : 'Two-Page Spread',
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  const PopupMenuItem(
+                                    value: 'toc',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.list_alt_rounded, size: 18),
+                                        SizedBox(width: 8),
+                                        Text('Table of Contents'),
+                                      ],
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'pdf',
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.picture_as_pdf_outlined,
+                                          size: 18,
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text('Export as PDF'),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
-                            // Table of Contents
-                            IconButton(
-                              icon: const Icon(
-                                Icons.list_alt_rounded,
-                                color: Colors.white,
-                              ),
-                              tooltip: 'Table of Contents',
-                              onPressed: () => _showTableOfContents(
-                                context,
-                                entries,
-                                bookPages,
-                              ),
-                            ),
-                            // Export to PDF (Exact Scrapbook & Journal replication)
-                            IconButton(
-                              icon: const Icon(
-                                Icons.picture_as_pdf_outlined,
-                                color: Colors.white,
-                              ),
-                              tooltip: 'Export Journal Book as PDF',
-                              onPressed: () =>
-                                  PdfExporter.exportEntriesToPdf([activeEntry]),
-                            ),
+                            ],
                           ],
                         ),
                       ),

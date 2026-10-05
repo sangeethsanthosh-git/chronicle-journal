@@ -822,7 +822,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
 
             // Bottom Attachment Bar
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: isDark
                     ? AppColors.paperSurfaceDark
@@ -835,8 +835,11 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                   ),
                 ),
               ),
-              child: Row(
-                children: [
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: [
                   OutlinedButton.icon(
                     onPressed: _showAddToEntrySheet,
                     style: OutlinedButton.styleFrom(
@@ -928,6 +931,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                 ],
               ),
             ),
+          ),
           ],
         ),
       ),

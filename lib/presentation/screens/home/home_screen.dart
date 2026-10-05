@@ -221,22 +221,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.shelves, color: Colors.white),
+            icon: const Icon(Icons.shelves, color: Colors.white, size: 21),
+            padding: const EdgeInsets.all(6),
+            constraints: const BoxConstraints(),
             tooltip: 'Journal Stack (Bookshelf)',
             onPressed: () => context.push('/journal-stack'),
           ),
           IconButton(
-            icon: const Icon(Icons.auto_stories_rounded, color: Colors.white),
+            icon: const Icon(Icons.auto_stories_rounded, color: Colors.white, size: 21),
+            padding: const EdgeInsets.all(6),
+            constraints: const BoxConstraints(),
             tooltip: 'Read as Physical Book',
             onPressed: () => context.push('/book-reader'),
           ),
           IconButton(
-            icon: const Icon(Icons.search_rounded, color: Colors.white),
+            icon: const Icon(Icons.search_rounded, color: Colors.white, size: 21),
+            padding: const EdgeInsets.all(6),
+            constraints: const BoxConstraints(),
             tooltip: 'Search Archive',
             onPressed: () => context.push('/search'),
           ),
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
+            icon: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 21),
+            padding: const EdgeInsets.all(6),
+            constraints: const BoxConstraints(),
             tooltip: 'More Options',
             onSelected: (val) {
               if (val == 'theme') {

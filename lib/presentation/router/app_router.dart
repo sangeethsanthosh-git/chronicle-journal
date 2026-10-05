@@ -18,6 +18,7 @@ import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/search/search_screen.dart';
 import '../screens/settings/settings_screen.dart';
 import '../screens/shell/navigation_shell.dart';
+import '../screens/splash/splash_screen.dart';
 import '../screens/timeline/timeline_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -27,8 +28,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/',
+    initialLocation: '/splash',
     redirect: (context, state) {
+      if (state.matchedLocation == '/splash') {
+        return null;
+      }
       if (!prefs.isOnboardingCompleted &&
           state.matchedLocation != '/onboarding') {
         return '/onboarding';
@@ -151,6 +155,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final setPin = state.uri.queryParameters['setPin'] == 'true';
           return LockScreen(isSettingPin: setPin);
         },
+      ),
+      GoRoute(
+        path: '/splash',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
         path: '/onboarding',
